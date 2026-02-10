@@ -29,4 +29,5 @@ export const PAGE_TITLES = {
 	requestDetail: "Request Details",
 	requestList: "Request List",
 	login: "Login",
+	register: "Register",
 };

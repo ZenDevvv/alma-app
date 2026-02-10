@@ -3,7 +3,10 @@ import { type RouteConfig, index, layout, prefix, route } from "@react-router/de
 // PPP Office routes
 const PPPRoutes: RouteConfig = [];
 
-const authRoutes: RouteConfig = [route("/login", "routes/auth/login.tsx")];
+const authRoutes: RouteConfig = [
+	route("/login", "routes/auth/login.tsx"),
+	route("/register", "routes/auth/register.tsx"),
+];
 
 // Main routes
 export default [

@@ -18,15 +18,7 @@ interface AdminSidebarProps {
 	onClose: () => void;
 }
 
-const navItems = [
-	{ href: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true },
-	{ href: "/admin/approvals", icon: FileCheck, label: "Approvals" },
-	{ href: "/admin/products", icon: Package, label: "Products" },
-	{ href: "/admin/vendors", icon: Store, label: "Vendors" },
-	{ href: "/admin/employees", icon: Users, label: "Employees" },
-	{ href: "/admin/reports", icon: PieChart, label: "Reports" },
-	{ href: "/admin/settings", icon: Settings, label: "Settings" },
-];
+const navItems = [{ href: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true }];
 
 export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
 	return (

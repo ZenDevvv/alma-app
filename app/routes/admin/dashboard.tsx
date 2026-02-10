@@ -1,88 +1,208 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { MOCK_STATS, MOCK_REQUESTS } from "~/data/mock-admin-data";
-import { DollarSign, Users, ShoppingCart, Clock, ArrowUpRight } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Progress } from "@/components/ui/progress";
+import {
+	MOCK_STATS,
+	MOCK_ORGANIZATIONS,
+	MOCK_SYSTEM_HEALTH,
+} from "~/data/mock-admin-data";
+import {
+	Building2,
+	Users,
+	UserCheck,
+	HeartPulse,
+	Download,
+	Plus,
+	TrendingUp,
+	Minus,
+	MoreVertical,
+	RefreshCw,
+	BarChart3,
+} from "lucide-react";
+
+const statCards = [
+	{
+		title: "Total Organizations",
+		value: MOCK_STATS.totalOrganizations.toLocaleString(),
+		trend: "+5% this month",
+		trendType: "up" as const,
+		icon: Building2,
+		iconBg: "bg-primary/10 text-primary",
+	},
+	{
+		title: "Total Users",
+		value: MOCK_STATS.totalUsers.toLocaleString(),
+		trend: "+12% vs last month",
+		trendType: "up" as const,
+		icon: Users,
+		iconBg: "bg-chart-2/15 text-chart-2",
+	},
+	{
+		title: "Active Users (24h)",
+		value: MOCK_STATS.activeUsersToday.toLocaleString(),
+		trend: "Stable",
+		trendType: "neutral" as const,
+		icon: UserCheck,
+		iconBg: "bg-chart-3/15 text-chart-3",
+	},
+	{
+		title: "System Health",
+		value: `${MOCK_STATS.systemHealth}%`,
+		trend: "All systems operational",
+		trendType: "up" as const,
+		icon: HeartPulse,
+		iconBg: "bg-emerald-500/10 text-emerald-600",
+	},
+];
+
+// Simple bar chart data for API response visualization
+const apiResponseBars = [40, 65, 45, 80, 55, 70, 90, 60, 75, 50, 85, 65];
 
 export default function AdminDashboard() {
-	const stats = [
-		{
-			title: "Total Outstanding",
-			value: `$${MOCK_STATS.totalOutstanding.toLocaleString()}`,
-			description: "+12.5% from last month",
-			icon: DollarSign,
-		},
-		{
-			title: "Active Users",
-			value: MOCK_STATS.activeUsers,
-			description: "+4 new this week",
-			icon: Users,
-		},
-		{
-			title: "Monthly Volume",
-			value: `$${MOCK_STATS.monthlyVolume.toLocaleString()}`,
-			description: "+8.2% from last month",
-			icon: ShoppingCart,
-		},
-		{
-			title: "Pending Approvals",
-			value: MOCK_STATS.pendingApprovals,
-			description: "Requires attention",
-			icon: Clock,
-		},
-	];
-
 	return (
 		<div className="space-y-6">
-			<div>
-				<h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-				<p className="text-muted-foreground">
-					Overview of your program's performance and activity.
-				</p>
+			{/* Header */}
+			<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+				<div>
+					<h1 className="text-2xl font-bold tracking-tight text-foreground">
+						Dashboard Overview
+					</h1>
+					<p className="text-sm text-muted-foreground">
+						Welcome back, here's what's happening in your system today.
+					</p>
+				</div>
+				<div className="flex items-center gap-3">
+					<Button variant="outline" size="sm" className="gap-2">
+						<Download className="size-4" />
+						Export Report
+					</Button>
+					<Button size="sm" className="gap-2">
+						<Plus className="size-4" />
+						New Organization
+					</Button>
+				</div>
 			</div>
 
-			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-				{stats.map((stat) => (
-					<Card key={stat.title}>
-						<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-							<CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-							<stat.icon className="h-4 w-4 text-muted-foreground" />
-						</CardHeader>
-						<CardContent>
-							<div className="text-2xl font-bold">{stat.value}</div>
-							<p className="text-xs text-muted-foreground">{stat.description}</p>
+			{/* Stat Cards */}
+			<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+				{statCards.map((stat) => (
+					<Card key={stat.title} className="border-border/50">
+						<CardContent className="p-5">
+							<div className="flex items-center justify-between">
+								<p className="text-sm font-medium text-muted-foreground">
+									{stat.title}
+								</p>
+								<div className={`rounded-lg p-2 ${stat.iconBg}`}>
+									<stat.icon className="size-4" />
+								</div>
+							</div>
+							<div className="mt-3">
+								<p className="text-3xl font-bold tracking-tight text-foreground">
+									{stat.value}
+								</p>
+								<div className="mt-1 flex items-center gap-1.5">
+									{stat.trendType === "up" && (
+										<TrendingUp className="size-3.5 text-emerald-600" />
+									)}
+									{stat.trendType === "neutral" && (
+										<Minus className="size-3.5 text-muted-foreground" />
+									)}
+									<span
+										className={`text-xs font-medium ${
+											stat.trendType === "up"
+												? "text-emerald-600"
+												: "text-muted-foreground"
+										}`}>
+										{stat.trend}
+									</span>
+								</div>
+							</div>
 						</CardContent>
 					</Card>
 				))}
 			</div>
 
-			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-				<Card className="col-span-4">
-					<CardHeader>
-						<CardTitle>Recent Activity</CardTitle>
-						<CardDescription>
-							Recent purchase requests and system events.
-						</CardDescription>
+			{/* Bottom Section: Organizations + System Health */}
+			<div className="grid gap-6 lg:grid-cols-5">
+				{/* Recent Organizations */}
+				<Card className="border-border/50 lg:col-span-3">
+					<CardHeader className="flex flex-row items-center justify-between pb-4">
+						<CardTitle className="text-lg font-semibold">
+							Recent Organizations
+						</CardTitle>
+						<Button variant="link" size="sm" className="text-primary">
+							View All
+						</Button>
 					</CardHeader>
-					<CardContent>
-						<div className="space-y-8">
-							{MOCK_REQUESTS.slice(0, 5).map((req) => (
-								<div key={req.id} className="flex items-center">
-									<div className="space-y-1">
-										<p className="text-sm font-medium leading-none">
-											{req.employeeName} requested {req.productName}
-										</p>
-										<p className="text-sm text-muted-foreground">
-											{req.date} • ${req.amount.toLocaleString()}
-										</p>
+					<CardContent className="px-6 pb-6">
+						{/* Table Header */}
+						<div className="grid grid-cols-[1fr_auto_auto_auto_auto] items-center gap-4 border-b border-border/50 pb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+							<span>Organization</span>
+							<span className="w-20 text-center">Status</span>
+							<span className="w-20 text-center">Students</span>
+							<span className="w-20 text-center">Created</span>
+							<span className="w-10 text-center">Action</span>
+						</div>
+
+						{/* Table Rows */}
+						<div className="divide-y divide-border/40">
+							{MOCK_ORGANIZATIONS.map((org) => (
+								<div
+									key={org.id}
+									className="grid grid-cols-[1fr_auto_auto_auto_auto] items-center gap-4 py-4 transition-colors hover:bg-muted/30">
+									{/* Org Info */}
+									<div className="flex items-center gap-3">
+										<Avatar className="size-10">
+											<AvatarFallback
+												className={`${org.color} text-white text-xs font-semibold`}>
+												{org.initials}
+											</AvatarFallback>
+										</Avatar>
+										<div>
+											<p className="text-sm font-medium text-foreground">
+												{org.name}
+											</p>
+											<p className="text-xs text-muted-foreground">
+												{org.domain}
+											</p>
+										</div>
 									</div>
-									<div
-										className={`ml-auto font-medium ${
-											req.status === "approved"
-												? "text-green-500"
-												: req.status === "rejected"
-													? "text-red-500"
-													: "text-yellow-500"
-										}`}>
-										{req.status.charAt(0).toUpperCase() + req.status.slice(1)}
+
+									{/* Status */}
+									<div className="w-20 text-center">
+										<Badge
+											className={`text-[11px] ${
+												org.status === "active"
+													? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400"
+													: org.status === "pending"
+														? "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-400"
+														: "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-400"
+											}`}>
+											{org.status.charAt(0).toUpperCase() +
+												org.status.slice(1)}
+										</Badge>
+									</div>
+
+									{/* Students */}
+									<span className="w-20 text-center text-sm text-foreground">
+										{org.students.toLocaleString()}
+									</span>
+
+									{/* Created */}
+									<span className="w-20 text-center text-xs text-muted-foreground">
+										{org.createdAt}
+									</span>
+
+									{/* Actions */}
+									<div className="flex w-10 justify-center">
+										<Button
+											variant="ghost"
+											size="icon"
+											className="size-8 text-muted-foreground hover:text-foreground">
+											<MoreVertical className="size-4" />
+										</Button>
 									</div>
 								</div>
 							))}
@@ -90,27 +210,100 @@ export default function AdminDashboard() {
 					</CardContent>
 				</Card>
 
-				<Card className="col-span-3">
-					<CardHeader>
-						<CardTitle>Quick Actions</CardTitle>
-						<CardDescription>Common tasks and reports.</CardDescription>
+				{/* System Health */}
+				<Card className="border-border/50 lg:col-span-2">
+					<CardHeader className="flex flex-row items-center justify-between pb-4">
+						<CardTitle className="text-lg font-semibold">
+							System Health
+						</CardTitle>
+						<Button
+							variant="ghost"
+							size="icon"
+							className="size-8 text-muted-foreground">
+							<RefreshCw className="size-4" />
+						</Button>
 					</CardHeader>
-					<CardContent className="grid gap-2">
-						{[
-							"Review Pending Approvals",
-							"Generate Monthly Report",
-							"Manage Employee Limits",
-							"Update Program Rules",
-						].map((action, i) => (
-							<div
-								key={i}
-								className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50 cursor-pointer transition-colors">
-								<span className="text-sm font-medium">{action}</span>
-								<ArrowUpRight className="h-4 w-4 text-muted-foreground" />
+					<CardContent className="space-y-6 px-6 pb-6">
+						{/* Server Uptime */}
+						<div>
+							<div className="flex items-center justify-between">
+								<span className="text-sm font-medium text-foreground">
+									{MOCK_SYSTEM_HEALTH[0].label}
+								</span>
+								<span className="text-sm font-bold text-emerald-600">
+									{MOCK_SYSTEM_HEALTH[0].value}
+									{MOCK_SYSTEM_HEALTH[0].unit}
+								</span>
 							</div>
-						))}
+							<Progress
+								value={MOCK_SYSTEM_HEALTH[0].value}
+								className="mt-2 h-2 bg-emerald-100 dark:bg-emerald-950 [&>[data-slot=progress-indicator]]:bg-emerald-500"
+							/>
+							<p className="mt-1.5 text-xs text-muted-foreground">
+								{MOCK_SYSTEM_HEALTH[0].detail}
+							</p>
+						</div>
+
+						{/* API Response */}
+						<div>
+							<div className="flex items-center justify-between">
+								<span className="text-sm font-medium text-foreground">
+									{MOCK_SYSTEM_HEALTH[1].label}
+								</span>
+								<span className="text-sm font-bold text-primary">
+									{MOCK_SYSTEM_HEALTH[1].value}
+									{MOCK_SYSTEM_HEALTH[1].unit}
+								</span>
+							</div>
+							{/* Mini Bar Chart */}
+							<div className="mt-2 flex items-end gap-1 h-16">
+								{apiResponseBars.map((height, i) => (
+									<div
+										key={i}
+										className="flex-1 rounded-sm bg-primary/20 transition-colors hover:bg-primary/40"
+										style={{ height: `${height}%` }}
+									/>
+								))}
+							</div>
+							<p className="mt-1.5 text-xs text-muted-foreground">
+								{MOCK_SYSTEM_HEALTH[1].detail}
+							</p>
+						</div>
+
+						{/* Database Load */}
+						<div>
+							<div className="flex items-center justify-between">
+								<span className="text-sm font-medium text-foreground">
+									{MOCK_SYSTEM_HEALTH[2].label}
+								</span>
+								<span className="text-sm font-bold text-amber-600">
+									{MOCK_SYSTEM_HEALTH[2].value}
+									{MOCK_SYSTEM_HEALTH[2].unit}
+								</span>
+							</div>
+							<Progress
+								value={MOCK_SYSTEM_HEALTH[2].value}
+								className="mt-2 h-2 bg-amber-100 dark:bg-amber-950 [&>[data-slot=progress-indicator]]:bg-amber-500"
+							/>
+						</div>
+
+						{/* View Detailed Metrics Button */}
+						<Button
+							variant="outline"
+							className="w-full gap-2 border-primary/30 text-primary hover:bg-primary/5">
+							<BarChart3 className="size-4" />
+							View Detailed Metrics
+						</Button>
 					</CardContent>
 				</Card>
+			</div>
+
+			{/* Footer */}
+			<div className="py-4 text-center">
+				<p className="text-xs text-muted-foreground">
+					&copy; {new Date().getFullYear()} ALMA LMS Platform. All rights
+					reserved.
+				</p>
 			</div>
 		</div>
 	);

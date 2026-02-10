@@ -25,6 +25,29 @@ export type DashboardStats = {
 	activeUsers: number;
 	monthlyVolume: number;
 	pendingApprovals: number;
+	totalOrganizations: number;
+	totalUsers: number;
+	activeUsersToday: number;
+	systemHealth: number;
+};
+
+export type Organization = {
+	id: string;
+	name: string;
+	domain: string;
+	initials: string;
+	color: string;
+	status: "active" | "pending" | "inactive";
+	students: number;
+	createdAt: string;
+};
+
+export type SystemHealthMetric = {
+	label: string;
+	value: number;
+	unit: string;
+	detail?: string;
+	color: string;
 };
 
 export const MOCK_EMPLOYEES: Employee[] = [
@@ -323,7 +346,77 @@ export const MOCK_STATS: DashboardStats = {
 	activeUsers: 142,
 	monthlyVolume: 45000,
 	pendingApprovals: 5,
+	totalOrganizations: 124,
+	totalUsers: 45200,
+	activeUsersToday: 12350,
+	systemHealth: 99.9,
 };
+
+export const MOCK_ORGANIZATIONS: Organization[] = [
+	{
+		id: "ORG-001",
+		name: "Riverdale High",
+		domain: "riverdale.edu",
+		initials: "RH",
+		color: "bg-blue-500",
+		status: "active",
+		students: 1245,
+		createdAt: "2 hours ago",
+	},
+	{
+		id: "ORG-002",
+		name: "Tech Academy",
+		domain: "techacademy.io",
+		initials: "TA",
+		color: "bg-violet-500",
+		status: "pending",
+		students: 0,
+		createdAt: "5 hours ago",
+	},
+	{
+		id: "ORG-003",
+		name: "Sunrise Elementary",
+		domain: "sunrise-edu.org",
+		initials: "SE",
+		color: "bg-emerald-500",
+		status: "active",
+		students: 850,
+		createdAt: "1 day ago",
+	},
+	{
+		id: "ORG-004",
+		name: "Global School",
+		domain: "globalschool.net",
+		initials: "GS",
+		color: "bg-red-500",
+		status: "inactive",
+		students: 2300,
+		createdAt: "2 days ago",
+	},
+];
+
+export const MOCK_SYSTEM_HEALTH: SystemHealthMetric[] = [
+	{
+		label: "Server Uptime",
+		value: 99.99,
+		unit: "%",
+		detail: "Last downtime: 42 days ago",
+		color: "bg-emerald-500",
+	},
+	{
+		label: "Avg. API Response",
+		value: 124,
+		unit: "ms",
+		detail: "Peak latency: 320ms at 09:00 AM",
+		color: "bg-primary",
+	},
+	{
+		label: "Database Load",
+		value: 45,
+		unit: "%",
+		color: "bg-amber-500",
+	},
+];
 
 export type Product = {
 	id: string;

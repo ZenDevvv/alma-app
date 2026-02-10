@@ -5,33 +5,48 @@ import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { useNavigate, Link } from "react-router";
 import { Icon } from "./icon";
+import { useAuth, useRegister } from "~/hooks/use-auth";
+import type { Register } from "~/zod/auth.zod";
 
 type UserRole = "student" | "instructor";
 
 export function RegisterForm() {
 	const navigate = useNavigate();
+	const { login } = useAuth();
+	const { mutate: register, isPending: isLoading } = useRegister();
 
 	const [role, setRole] = useState<UserRole>("student");
 	const [firstName, setFirstName] = useState("");
 	const [lastName, setLastName] = useState("");
+	const [userName, setUserName] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
 	const [showPassword, setShowPassword] = useState(false);
-	const [isLoading, setIsLoading] = useState(false);
 
-	const handleRegister = async (e: React.FormEvent) => {
+	const handleRegister = (e: React.FormEvent) => {
 		e.preventDefault();
-		setIsLoading(true);
-		try {
-			// TODO: implement registration
-			await new Promise((resolve) => setTimeout(resolve, 800));
-			navigate("/login");
-		} catch (err) {
-			console.error("Registration failed:", err);
-		} finally {
-			setIsLoading(false);
-		}
+
+		const payload: Register = {
+			email,
+			password,
+			userName,
+			role: "user",
+			subRole: role,
+			person: {
+				personalInfo: {
+					firstName,
+					lastName,
+				},
+			},
+		};
+
+		register(payload, {
+			onSuccess: async () => {
+				await login(email, password);
+				navigate("/admin");
+			},
+		});
 	};
 
 	return (
@@ -118,6 +133,28 @@ export function RegisterForm() {
 					</div>
 				</div>
 
+				{/* Username */}
+				<div className="space-y-2">
+					<Label htmlFor="reg-username" className="text-sm font-medium">
+						Username
+					</Label>
+					<div className="relative">
+						<span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-lg leading-none">
+							<Icon name="person" className="text-lg" />
+						</span>
+						<Input
+							id="reg-username"
+							type="text"
+							placeholder="johndoe"
+							value={userName}
+							onChange={(e) => setUserName(e.target.value)}
+							required
+							disabled={isLoading}
+							className="pl-10 bg-white dark:bg-gray-950 h-11"
+						/>
+					</div>
+				</div>
+
 				{/* Email */}
 				<div className="space-y-2">
 					<Label htmlFor="reg-email" className="text-sm font-medium">
@@ -188,7 +225,7 @@ export function RegisterForm() {
 						</span>
 						<Input
 							id="reg-confirm-password"
-							type="password"
+							type={showPassword ? "text" : "password"}
 							placeholder="••••••••"
 							value={confirmPassword}
 							onChange={(e) => setConfirmPassword(e.target.value)}

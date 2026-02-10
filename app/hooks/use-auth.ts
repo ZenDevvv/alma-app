@@ -3,6 +3,7 @@ import { useContext } from "react";
 import AuthContext, { type AuthContextType } from "~/context/auth/auth-context";
 import { queryClient } from "~/lib/query-client";
 import authService from "~/services/auth-service";
+import type { Register } from "~/zod/auth.zod";
 
 export const useAuth = (): AuthContextType => {
 	const context = useContext(AuthContext);
@@ -16,7 +17,7 @@ export const useAuth = (): AuthContextType => {
 
 export const useRegister = () => {
 	return useMutation({
-		mutationFn: (data: object | FormData) => {
+		mutationFn: (data: Register | FormData) => {
 			return authService.register(data);
 		},
 		onSuccess: () => {

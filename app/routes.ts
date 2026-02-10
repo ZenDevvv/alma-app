@@ -14,5 +14,6 @@ export default [
 	layout("layouts/auth-layout.tsx", authRoutes),
 	layout("layouts/admin-layout.tsx", prefix("admin", [
 		route("/", "routes/admin/dashboard.tsx"),
+		route("/organizations", "routes/admin/organizations.tsx"),
 	])),
 ] satisfies RouteConfig;

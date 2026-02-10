@@ -40,6 +40,13 @@ export type Organization = {
 	status: "active" | "pending" | "inactive";
 	students: number;
 	createdAt: string;
+	adminName: string;
+	adminEmail: string;
+	adminInitials: string;
+	storageUsed: number;
+	storageTotal: number;
+	storageUnit: string;
+	enabled: boolean;
 };
 
 export type SystemHealthMetric = {
@@ -354,44 +361,72 @@ export const MOCK_STATS: DashboardStats = {
 
 export const MOCK_ORGANIZATIONS: Organization[] = [
 	{
-		id: "ORG-001",
-		name: "Riverdale High",
-		domain: "riverdale.edu",
-		initials: "RH",
+		id: "ORG-1002",
+		name: "Lincoln High School",
+		domain: "lincoln.edu",
+		initials: "LH",
+		color: "bg-indigo-500",
+		status: "active",
+		students: 1240,
+		createdAt: "2 hours ago",
+		adminName: "John Doe",
+		adminEmail: "john.d@lincoln.edu",
+		adminInitials: "JD",
+		storageUsed: 450,
+		storageTotal: 1000,
+		storageUnit: "GB",
+		enabled: true,
+	},
+	{
+		id: "ORG-3341",
+		name: "State University",
+		domain: "state.edu",
+		initials: "SU",
 		color: "bg-blue-500",
 		status: "active",
-		students: 1245,
-		createdAt: "2 hours ago",
-	},
-	{
-		id: "ORG-002",
-		name: "Tech Academy",
-		domain: "techacademy.io",
-		initials: "TA",
-		color: "bg-violet-500",
-		status: "pending",
-		students: 0,
+		students: 15000,
 		createdAt: "5 hours ago",
+		adminName: "Sarah Smith",
+		adminEmail: "s.smith@state.edu",
+		adminInitials: "SS",
+		storageUsed: 4200,
+		storageTotal: 10000,
+		storageUnit: "GB",
+		enabled: true,
 	},
 	{
-		id: "ORG-003",
-		name: "Sunrise Elementary",
-		domain: "sunrise-edu.org",
-		initials: "SE",
+		id: "ORG-0056",
+		name: "Westside Academy",
+		domain: "westside.edu",
+		initials: "WA",
 		color: "bg-emerald-500",
-		status: "active",
-		students: 850,
+		status: "inactive",
+		students: 450,
 		createdAt: "1 day ago",
+		adminName: "Mike Ross",
+		adminEmail: "m.ross@westside.edu",
+		adminInitials: "MR",
+		storageUsed: 120,
+		storageTotal: 500,
+		storageUnit: "GB",
+		enabled: false,
 	},
 	{
-		id: "ORG-004",
-		name: "Global School",
-		domain: "globalschool.net",
-		initials: "GS",
-		color: "bg-red-500",
-		status: "inactive",
-		students: 2300,
+		id: "ORG-8902",
+		name: "Global Institute",
+		domain: "globalinst.com",
+		initials: "GI",
+		color: "bg-amber-500",
+		status: "active",
+		students: 5600,
 		createdAt: "2 days ago",
+		adminName: "David Kim",
+		adminEmail: "admin@globalinst.com",
+		adminInitials: "DK",
+		storageUsed: 1800,
+		storageTotal: 2000,
+		storageUnit: "GB",
+		enabled: true,
 	},
 ];
 

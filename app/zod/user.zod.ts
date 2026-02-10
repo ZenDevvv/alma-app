@@ -1,64 +1,79 @@
 import { z } from "zod";
 import type { Person } from "./person.zod";
-import type { Transaction } from "./transaction.zod";
-import type { Department } from "./department.zod";
 import type { Pagination } from "~/types/pagination";
-import { de } from "zod/v4/locales";
 
-export const RoleEnum = z.enum(["superadmin", "viewer", "admin", "user"]);
-export type Role = z.infer<typeof RoleEnum>;
+// ─── Enums matching Prisma ───────────────────────────────────────────
 
-export const SubRoleEnum = z.enum([
-	"staff",
-	"guard",
-	"vendor",
-	"operator",
-	"manager",
-	"guest",
-	"approver",
-	"super",
-]);
-export type SubRole = z.infer<typeof SubRoleEnum>;
+export const Role = z.enum(["user", "admin", "viewer"]);
 
-export const StatusEnum = z.enum(["active", "inactive", "suspended", "archived"]);
-export type Status = z.infer<typeof StatusEnum>;
+export const SubRole = z.enum(["student", "instructor", "org_admin"]);
 
-export const createUserSchema = z.object({
-	personId: z.string(),
+export const UserStatus = z.enum(["active", "inactive", "suspended", "archived"]);
+
+// ─── User Model Schema ──────────────────────────────────────────────
+
+export const UserSchema = z.object({
+	id: z.string(),
 	avatar: z.string().optional(),
-	userName: z.string().min(1),
-	email: z.string().email(),
-	password: z.string().min(8).optional(), // Optional for updates, required for create in practice
-	role: RoleEnum,
-	subRole: SubRoleEnum.optional(),
-	organizationId: z.string().optional(),
+	userName: z
+		.string()
+		.min(3, "Username must be at least 3 characters")
+		.max(50, "Username must be at most 50 characters")
+		.regex(
+			/^[a-zA-Z0-9_-]+$/,
+			"Username can only contain letters, numbers, underscores, and hyphens",
+		)
+		.optional(),
+	email: z.string().email("Invalid email format"),
+	password: z.string(),
+	role: Role,
+	subRole: SubRole.optional(),
+	status: UserStatus.default("active"),
+	isDeleted: z.boolean().default(false),
+	lastLogin: z.coerce.date().optional(),
 	loginMethod: z.string().min(1),
+	createdAt: z.coerce.date(),
+	updatedAt: z.coerce.date(),
+	personId: z
+		.string()
+		.optional(),
+	orgId: z
+		.string()
+		.optional(),
+	departmentId: z
+		.string()
+		.optional(),
 });
 
-export const updateUserSchema = createUserSchema.partial().extend({
-	password: z.string().min(8).optional(),
+export type User = z.infer<typeof UserSchema>;
+
+export const CreateUserSchema = UserSchema.omit({
+	id: true,
+	createdAt: true,
+	updatedAt: true,
+}).partial({
+	avatar: true,
+	userName: true,
+	isDeleted: true,
+	lastLogin: true,
+	personId: true,
+	orgId: true,
+	departmentId: true,
 });
 
-export const userSchema = createUserSchema
-	.extend({
-		id: z.string(),
-		status: StatusEnum.default("active"),
-		isDeleted: z.boolean().default(false),
-		departmentId: z.string().nullable().optional(),
-		lastLogin: z.date().nullable().optional(),
-		createdAt: z.date(),
-		updatedAt: z.date(),
-	})
-	.strict(); // Ensures no extra fields
+export type CreateUser = z.infer<typeof CreateUserSchema>;
 
-export type User = z.infer<typeof userSchema>;
-export type CreateUser = z.infer<typeof createUserSchema>;
-export type UpdateUser = z.infer<typeof updateUserSchema>;
+export const UpdateUserSchema = UserSchema.omit({
+	id: true,
+	createdAt: true,
+	updatedAt: true,
+	isDeleted: true,
+}).partial();
+
+export type UpdateUser = z.infer<typeof UpdateUserSchema>;
 
 export type UserWithRelation = User & {
 	person: Person;
-	transactions: Transaction[];
-	department: Department;
 };
 
 export type GetAllUsers = {

@@ -59,94 +59,94 @@ body {
 :root {
 	--radius: 0.625rem;
 
-	/* Light mode - Pastel Blue Theme */
-	--background: oklch(0.98 0.02 245); /* Very light misty blue */
-	--foreground: oklch(0.2 0.05 245); /* Dark slate blue */
+	/* Light mode - ALMA Brand Theme */
+	--background: oklch(0.97 0.01 255); /* Very light blue-gray */
+	--foreground: oklch(0.2 0.06 255); /* Dark navy */
 	--card: oklch(1 0 0); /* White */
-	--card-foreground: oklch(0.2 0.05 245);
+	--card-foreground: oklch(0.2 0.06 255);
 
 	--popover: var(--card);
 	--popover-foreground: var(--card-foreground);
 
-	--primary: oklch(0.65 0.13 245); /* Soft pastel blue */
+	--primary: oklch(0.40 0.13 255); /* #285192 Dark blue */
 	--primary-foreground: oklch(0.99 0 0);
 
-	--secondary: oklch(0.93 0.04 245); /* Light blue-gray neutral */
-	--secondary-foreground: oklch(0.25 0.05 245);
+	--secondary: oklch(0.93 0.03 255); /* Light blue-gray */
+	--secondary-foreground: oklch(0.25 0.06 255);
 
-	--muted: oklch(0.95 0.02 245);
-	--muted-foreground: oklch(0.55 0.05 245);
+	--muted: oklch(0.95 0.01 255);
+	--muted-foreground: oklch(0.50 0.04 255);
 
-	--accent: oklch(0.9 0.05 245); /* slightly stronger pastel blue */
-	--accent-foreground: var(--primary);
+	--accent: oklch(0.72 0.14 200); /* Cyan/turquoise accent */
+	--accent-foreground: oklch(0.15 0.06 255);
 
 	--destructive: oklch(0.65 0.2 30);
 
-	--border: oklch(0.9 0.03 245);
+	--border: oklch(0.90 0.02 255);
 	--input: var(--border);
-	--ring: oklch(0.65 0.13 245);
+	--ring: oklch(0.40 0.13 255);
 
 	/* Charts / accents */
-	--chart-1: oklch(0.65 0.13 245); /* Pastel Blue */
-	--chart-2: oklch(0.7 0.12 220); /* Pastel Teal */
-	--chart-3: oklch(0.75 0.1 280); /* Pastel Lavender */
-	--chart-4: oklch(0.75 0.12 180); /* Pastel Cyan */
-	--chart-5: oklch(0.8 0.1 320); /* Pastel Pink */
+	--chart-1: oklch(0.40 0.13 255); /* Dark Blue #285192 */
+	--chart-2: oklch(0.72 0.14 200); /* Cyan/Turquoise */
+	--chart-3: oklch(0.72 0.16 142); /* Green #76C043 */
+	--chart-4: oklch(0.80 0.17 130); /* Light Green #A8D84E */
+	--chart-5: oklch(0.55 0.12 255); /* Mid Blue */
 
 	/* Sidebar */
-	--sidebar: oklch(0.98 0.02 245);
-	--sidebar-foreground: oklch(0.25 0.05 245);
+	--sidebar: oklch(0.97 0.01 255);
+	--sidebar-foreground: oklch(0.25 0.06 255);
 	--sidebar-primary: var(--primary);
 	--sidebar-primary-foreground: oklch(0.99 0 0);
-	--sidebar-accent: oklch(0.93 0.04 245);
-	--sidebar-accent-foreground: oklch(0.25 0.05 245);
-	--sidebar-border: oklch(0.9 0.03 245);
+	--sidebar-accent: oklch(0.93 0.03 255);
+	--sidebar-accent-foreground: oklch(0.25 0.06 255);
+	--sidebar-border: oklch(0.90 0.02 255);
 	--sidebar-ring: var(--ring);
 }
 
 .dark {
-	/* Dark mode - Deep Blue Theme */
-	--background: oklch(0.15 0.05 255); /* Deep midnight blue */
-	--foreground: oklch(0.98 0.01 245);
+	/* Dark mode - ALMA Brand Dark Theme */
+	--background: oklch(0.15 0.05 255); /* Deep navy */
+	--foreground: oklch(0.98 0.01 255);
 
-	--card: oklch(0.2 0.06 255); /* Darker blue card */
-	--card-foreground: oklch(0.98 0.01 245);
+	--card: oklch(0.20 0.06 255); /* Dark blue card */
+	--card-foreground: oklch(0.98 0.01 255);
 
 	--popover: var(--card);
 	--popover-foreground: var(--card-foreground);
 
-	--primary: oklch(0.7 0.13 245); /* Lighter pastel blue for contrast */
-	--primary-foreground: oklch(0.15 0.05 255);
+	--primary: oklch(0.55 0.13 255); /* Lighter brand blue for contrast */
+	--primary-foreground: oklch(0.98 0 0);
 
 	--secondary: oklch(0.25 0.06 255);
-	--secondary-foreground: oklch(0.98 0.01 245);
+	--secondary-foreground: oklch(0.98 0.01 255);
 
 	--muted: oklch(0.25 0.06 255);
-	--muted-foreground: oklch(0.7 0.08 245);
+	--muted-foreground: oklch(0.65 0.06 255);
 
-	--accent: oklch(0.3 0.08 255);
-	--accent-foreground: oklch(0.98 0.01 245);
+	--accent: oklch(0.65 0.12 200); /* Cyan accent */
+	--accent-foreground: oklch(0.98 0.01 255);
 
 	--destructive: oklch(0.65 0.2 30);
 
 	--border: oklch(1 0 0 / 15%);
 	--input: oklch(1 0 0 / 20%);
-	--ring: oklch(0.7 0.13 245);
+	--ring: oklch(0.55 0.13 255);
 
 	/* Charts / accents */
-	--chart-1: oklch(0.7 0.13 245);
-	--chart-2: oklch(0.65 0.15 220);
-	--chart-3: oklch(0.65 0.15 280);
-	--chart-4: oklch(0.7 0.15 180);
-	--chart-5: oklch(0.75 0.15 320);
+	--chart-1: oklch(0.55 0.13 255); /* Brand Blue */
+	--chart-2: oklch(0.72 0.14 200); /* Cyan */
+	--chart-3: oklch(0.72 0.16 142); /* Green */
+	--chart-4: oklch(0.80 0.17 130); /* Light Green */
+	--chart-5: oklch(0.65 0.10 255); /* Mid Blue */
 
 	/* Sidebar */
 	--sidebar: oklch(0.12 0.05 255);
-	--sidebar-foreground: oklch(0.98 0.01 245);
+	--sidebar-foreground: oklch(0.98 0.01 255);
 	--sidebar-primary: var(--primary);
-	--sidebar-primary-foreground: oklch(0.98 0.01 245);
-	--sidebar-accent: oklch(0.2 0.06 255);
-	--sidebar-accent-foreground: oklch(0.98 0.01 245);
+	--sidebar-primary-foreground: oklch(0.98 0.01 255);
+	--sidebar-accent: oklch(0.20 0.06 255);
+	--sidebar-accent-foreground: oklch(0.98 0.01 255);
 	--sidebar-border: oklch(1 0 0 / 15%);
 	--sidebar-ring: var(--ring);
 }

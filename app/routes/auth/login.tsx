@@ -2,7 +2,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, Loader2, Hexagon } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
+import { Loader2 } from "lucide-react";
 import { useAuth } from "~/hooks/use-auth";
 import { useNavigate } from "react-router";
 import { PAGE_TITLES } from "~/config/page-titles";
@@ -12,12 +14,21 @@ export function meta({}: Route.MetaArgs) {
 	return [{ title: PAGE_TITLES.login }];
 }
 
+function Icon({ name, className = "" }: { name: string; className?: string }) {
+	return (
+		<span className={`material-symbols-outlined ${className}`} style={{ fontSize: "inherit" }}>
+			{name}
+		</span>
+	);
+}
+
 export default function LoginPage() {
 	const { login, error } = useAuth();
 
 	const [identifier, setIdentifier] = useState("");
 	const [password, setPassword] = useState("");
 	const [showPassword, setShowPassword] = useState(false);
+	const [keepLoggedIn, setKeepLoggedIn] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const navigate = useNavigate();
 
@@ -27,10 +38,8 @@ export default function LoginPage() {
 
 		try {
 			// Bypass authentication for demo
-			// const user = await login(identifier, password);
+			const user = await login(identifier, password);
 
-			// Simulate a small delay for better UX
-			await new Promise((resolve) => setTimeout(resolve, 800));
 			navigate("/admin");
 		} catch (err) {
 			console.error("Login failed:", err);
@@ -40,122 +49,214 @@ export default function LoginPage() {
 	};
 
 	return (
-		<div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2 xl:min-h-[800px]">
-			<div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900">
-				<div className="mx-auto grid w-full max-w-[400px] gap-6">
-					<div className="grid gap-2 text-center pb-4">
-						<div className="flex justify-center mb-4">
-							<div className="flex h-16 w-16 items-center justify-center rounded-xl bg-primary/10 text-primary">
-								<Hexagon className="h-10 w-10" />
-							</div>
+		<div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2">
+			{/* Left Panel - Hero */}
+			<div className="hidden lg:flex relative overflow-hidden">
+				<img
+					src="https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&q=80&w=2670"
+					alt="Modern office interior"
+					className="absolute inset-0 h-full w-full object-cover"
+				/>
+				<div className="absolute inset-0 bg-primary/85" />
+
+				<div className="relative z-10 flex flex-col justify-between w-full p-10">
+					{/* Logo */}
+					<div className="flex items-center gap-3">
+						<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20 text-white font-bold text-sm">
+							<Icon name="school" className="text-xl" />
 						</div>
-						<h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-							Welcome back!
-						</h1>
-						<p className="text-balance text-muted-foreground dark:text-gray-400">
-							Enter your credentials to access the portal
-						</p>
+						<span className="text-white font-semibold text-lg tracking-tight">
+							ALMA LMS
+						</span>
 					</div>
 
-					<form onSubmit={handleSubmit} className="grid gap-4">
-						{error && (
-							<div className="rounded-md bg-red-50 p-3 text-sm font-medium text-red-500 ring-1 ring-inset ring-red-500/10 dark:bg-red-900/20 dark:text-red-400 text-center">
-								{error}
-							</div>
-						)}
+					{/* Headline */}
+					<div className="max-w-lg space-y-6">
+						<h1 className="text-4xl xl:text-5xl font-bold text-white leading-tight">
+							Empowering the next generation of{" "}
+							<span className="italic">innovators.</span>
+						</h1>
+						<p className="text-white/80 text-base leading-relaxed max-w-md">
+							Access your courses, collaborate with peers, and track your progress in
+							one secure, unified learning environment.
+						</p>
 
-						<div className="grid gap-2">
-							<Label htmlFor="identifier">Email</Label>
-							<Input
-								id="identifier"
-								type="text"
-								placeholder="name@example.com"
-								value={identifier}
-								onChange={(e) => setIdentifier(e.target.value)}
-								required
-								disabled={isLoading}
-								className="bg-white dark:bg-gray-950"
-							/>
+						{/* Badges */}
+						<div className="flex items-center gap-3 pt-2">
+							<span className="inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-white/10 px-4 py-1.5 text-sm text-white backdrop-blur-sm">
+								<Icon name="lock" className="text-sm" />
+								Secure Access
+							</span>
+							<span className="inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-white/10 px-4 py-1.5 text-sm text-white backdrop-blur-sm">
+								<Icon name="monitoring" className="text-sm" />
+								Real-time Analytics
+							</span>
+						</div>
+					</div>
+
+					{/* Footer */}
+					<p className="text-white/50 text-sm">
+						&copy; {new Date().getFullYear()} ALMA Education Systems. All rights
+						reserved.
+					</p>
+				</div>
+			</div>
+
+			{/* Right Panel - Login Form */}
+			<div className="flex flex-col min-h-screen lg:min-h-0 bg-white dark:bg-gray-950">
+				{/* Need help link */}
+				<div className="flex justify-end p-6">
+					<a
+						href="#"
+						className="text-sm font-medium text-primary hover:underline underline-offset-4">
+						Need help?
+					</a>
+				</div>
+
+				{/* Form area */}
+				<div className="flex flex-1 items-center justify-center px-6 pb-12">
+					<div className="w-full max-w-[400px] space-y-8">
+						{/* Header */}
+						<div className="space-y-2">
+							<h2 className="text-2xl font-bold tracking-tight text-foreground">
+								Welcome back
+							</h2>
+							<p className="text-sm text-muted-foreground">
+								Please enter your details to sign in.
+							</p>
 						</div>
 
-						<div className="grid gap-2">
+						<form onSubmit={handleSubmit} className="space-y-5">
+							{error && (
+								<div className="rounded-lg bg-red-50 p-3 text-sm font-medium text-red-600 ring-1 ring-inset ring-red-500/10 dark:bg-red-900/20 dark:text-red-400">
+									{error}
+								</div>
+							)}
+
+							{/* Email field */}
+							<div className="space-y-2">
+								<Label htmlFor="identifier" className="text-sm font-medium">
+									Email Address
+								</Label>
+								<div className="relative">
+									<span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-lg leading-none">
+										<Icon name="mail" className="text-lg" />
+									</span>
+									<Input
+										id="identifier"
+										type="text"
+										placeholder="student@1bis.edu"
+										value={identifier}
+										onChange={(e) => setIdentifier(e.target.value)}
+										required
+										disabled={isLoading}
+										className="pl-10 bg-white dark:bg-gray-950 h-11"
+									/>
+								</div>
+							</div>
+
+							{/* Password field */}
+							<div className="space-y-2">
+								<Label htmlFor="password" className="text-sm font-medium">
+									Password
+								</Label>
+								<div className="relative">
+									<span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-lg leading-none">
+										<Icon name="lock" className="text-lg" />
+									</span>
+									<Input
+										id="password"
+										type={showPassword ? "text" : "password"}
+										placeholder="••••••••"
+										value={password}
+										onChange={(e) => setPassword(e.target.value)}
+										required
+										disabled={isLoading}
+										className="pl-10 pr-10 bg-white dark:bg-gray-950 h-11"
+									/>
+									<Button
+										type="button"
+										variant="ghost"
+										size="icon"
+										className="absolute right-0 top-0 h-11 w-10 text-muted-foreground hover:bg-transparent"
+										onClick={() => setShowPassword(!showPassword)}
+										disabled={isLoading}>
+										<span className="text-lg leading-none">
+											<Icon
+												name={
+													showPassword ? "visibility" : "visibility_off"
+												}
+												className="text-lg"
+											/>
+										</span>
+										<span className="sr-only">Toggle password visibility</span>
+									</Button>
+								</div>
+							</div>
+
+							{/* Keep logged in + Forgot password */}
 							<div className="flex items-center justify-between">
-								<Label htmlFor="password">Password</Label>
+								<div className="flex items-center gap-2">
+									<Checkbox
+										id="keep-logged-in"
+										checked={keepLoggedIn}
+										onCheckedChange={(checked) =>
+											setKeepLoggedIn(checked === true)
+										}
+									/>
+									<Label
+										htmlFor="keep-logged-in"
+										className="text-sm font-normal text-muted-foreground cursor-pointer">
+										Keep me logged in
+									</Label>
+								</div>
 								<a
 									href="#"
 									className="text-sm font-medium text-primary hover:underline underline-offset-4">
 									Forgot password?
 								</a>
 							</div>
-							<div className="relative">
-								<Input
-									id="password"
-									type={showPassword ? "text" : "password"}
-									value={password}
-									onChange={(e) => setPassword(e.target.value)}
-									required
-									disabled={isLoading}
-									className="bg-white dark:bg-gray-950 pr-10"
-								/>
-								<Button
-									type="button"
-									variant="ghost"
-									size="icon"
-									className="absolute right-0 top-0 h-10 w-10 text-muted-foreground hover:bg-transparent"
-									onClick={() => setShowPassword(!showPassword)}
-									disabled={isLoading}>
-									{showPassword ? (
-										<EyeOff className="h-4 w-4" />
-									) : (
-										<Eye className="h-4 w-4" />
-									)}
-									<span className="sr-only">Toggle password visibility</span>
-								</Button>
+
+							{/* Sign In button */}
+							<Button
+								type="submit"
+								className="w-full h-11"
+								disabled={isLoading}
+								size="lg">
+								{isLoading ? (
+									<>
+										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+										Signing in...
+									</>
+								) : (
+									"Sign In"
+								)}
+							</Button>
+						</form>
+
+						{/* Divider */}
+						<div className="relative">
+							<div className="absolute inset-0 flex items-center">
+								<span className="w-full border-t border-border" />
+							</div>
+							<div className="relative flex justify-center text-xs">
+								<span className="bg-white dark:bg-gray-950 px-3 text-muted-foreground">
+									Or access via
+								</span>
 							</div>
 						</div>
 
+						{/* SSO Button */}
 						<Button
-							type="submit"
-							className="w-full mt-2"
-							disabled={isLoading}
-							size="lg">
-							{isLoading ? (
-								<>
-									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-									Signing in...
-								</>
-							) : (
-								"Sign In"
-							)}
+							type="button"
+							variant="outline"
+							className="w-full h-11 gap-2"
+							disabled={isLoading}>
+							<span className="text-lg leading-none text-primary">
+								<Icon name="passkey" className="text-lg" />
+							</span>
+							Single Sign-On (SSO)
 						</Button>
-					</form>
-
-					<div className="text-center text-sm text-muted-foreground mt-4">
-						Don&apos;t have an account?{" "}
-						<a
-							href="#"
-							className="font-medium text-primary hover:underline underline-offset-4">
-							Contact support
-						</a>
-					</div>
-				</div>
-			</div>
-
-			<div className="hidden lg:block relative bg-muted">
-				<img
-					src="https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&q=80&w=2670"
-					alt="Login Background"
-					className="h-full w-full object-cover dark:brightness-[0.4] dark:grayscale-[0.3]"
-				/>
-				<div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent flex flex-col justify-end p-16 text-white">
-					<div className="max-w-md space-y-4">
-						<blockquote className="space-y-2">
-							<p className="text-lg font-medium leading-relaxed">
-								&ldquo;This portal has revolutionized how we manage our employee
-								purchases. Streamlined, efficient, and beautifully designed.&rdquo;
-							</p>
-							<footer className="text-sm text-gray-300">Admin Team, Tech Corp</footer>
-						</blockquote>
 					</div>
 				</div>
 			</div>

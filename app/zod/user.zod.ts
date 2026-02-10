@@ -6,7 +6,7 @@ import type { Pagination } from "~/types/pagination";
 
 export const Role = z.enum(["user", "admin", "viewer"]);
 
-export const SubRole = z.enum(["student", "instructor", "org_admin"]);
+export const SubRole = z.enum(["student", "instructor", "org_admin", "superadmin"]);
 
 export const UserStatus = z.enum(["active", "inactive", "suspended", "archived"]);
 
@@ -27,22 +27,15 @@ export const UserSchema = z.object({
 	email: z.string().email("Invalid email format"),
 	password: z.string(),
 	role: Role,
-	subRole: SubRole.optional(),
+	subRole: SubRole,
 	status: UserStatus.default("active"),
 	isDeleted: z.boolean().default(false),
 	lastLogin: z.coerce.date().optional(),
-	loginMethod: z.string().min(1),
+	loginMethod: z.string().optional(),
 	createdAt: z.coerce.date(),
 	updatedAt: z.coerce.date(),
-	personId: z
-		.string()
-		.optional(),
-	orgId: z
-		.string()
-		.optional(),
-	departmentId: z
-		.string()
-		.optional(),
+	personId: z.string().optional(),
+	orgId: z.string().optional(),
 });
 
 export type User = z.infer<typeof UserSchema>;
@@ -53,12 +46,10 @@ export const CreateUserSchema = UserSchema.omit({
 	updatedAt: true,
 }).partial({
 	avatar: true,
-	userName: true,
 	isDeleted: true,
 	lastLogin: true,
 	personId: true,
 	orgId: true,
-	departmentId: true,
 });
 
 export type CreateUser = z.infer<typeof CreateUserSchema>;

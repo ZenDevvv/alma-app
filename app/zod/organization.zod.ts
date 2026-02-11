@@ -1,9 +1,8 @@
 import { z } from "zod";
 import type { Pagination } from "~/types/pagination";
 
-// Organization Schema (full, including ID)
 export const OrganizationSchema = z.object({
-id: z.string(),
+	id: z.string(),
 	name: z.string().min(1),
 	description: z.string().optional(),
 	code: z.string().min(1),
@@ -12,9 +11,21 @@ id: z.string(),
 	updatedAt: z.coerce.date(),
 });
 
-export type Organization = z.infer<typeof OrganizationSchema>;
+export const OrganizationWithRelationSchema = OrganizationSchema.extend({});
 
-// Create Organization Schema (excluding ID, createdAt, updatedAt, and computed fields)
+export const GetAllOrganizationsSchema = z.object({
+	organizations: z.array(OrganizationWithRelationSchema),
+	pagination: z
+		.object({
+			page: z.number(),
+			limit: z.number(),
+			total: z.number(),
+			totalPages: z.number(),
+		})
+		.optional(),
+	count: z.number().optional(),
+});
+
 export const CreateOrganizationSchema = OrganizationSchema.omit({
 	id: true,
 	createdAt: true,
@@ -24,24 +35,11 @@ export const CreateOrganizationSchema = OrganizationSchema.omit({
 	isDeleted: true,
 });
 
+export const UpdateOrganizationSchema = CreateOrganizationSchema.partial();
+
+export type Organization = z.infer<typeof OrganizationSchema>;
+export type OrganizationWithRelation = z.infer<typeof OrganizationWithRelationSchema>;
+export type GetAllOrganizations = z.infer<typeof GetAllOrganizationsSchema>;
 export type CreateOrganization = z.infer<typeof CreateOrganizationSchema>;
-
-// Update Organization Schema (partial, excluding immutable fields)
-export const UpdateOrganizationSchema = OrganizationSchema.omit({
-	id: true,
-	createdAt: true,
-	updatedAt: true,
-	isDeleted: true,
-}).partial();
-
 export type UpdateOrganization = z.infer<typeof UpdateOrganizationSchema>;
-
-export const GroupBySchema = z.object({
-	groupBy: z.string().optional(),
-});
-
-export type GetAllOrganizations = {
-	organizations: Organization[];
-	pagination: Pagination
-	count: number
-}
+export type OrganizationPagination = Pagination;

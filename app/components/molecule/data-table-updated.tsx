@@ -38,6 +38,7 @@ export interface DataTableColumn<T> {
 	searchable?: boolean;
 	render?: (value: T[keyof T], row: T) => React.ReactNode;
 	className?: string;
+	cellClassName?: string;
 }
 
 export interface DataTableProps<T> {
@@ -45,6 +46,7 @@ export interface DataTableProps<T> {
 	data: T[];
 	className?: string;
 	onRowClick?: (row: T) => void;
+	variant?: "default" | "organizations";
 }
 
 interface ColumnState {
@@ -112,6 +114,7 @@ export function DataTable<T extends Record<string, any>>({
 	data,
 	className,
 	onRowClick,
+	variant = "default",
 }: DataTableProps<T>) {
 	const [searchParams, setSearchParams] = useSearchParams();
 	const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -230,7 +233,10 @@ export function DataTable<T extends Record<string, any>>({
 		<div className={cn("rounded-md border-none bg-card", className)}>
 			<Table>
 				<TableHeader>
-					<TableRow>
+					<TableRow
+						className={cn(
+							variant === "organizations" && "hover:bg-transparent",
+						)}>
 						{columns.map((column) => {
 							const state = columnStates[String(column.key)];
 							const hasFilters =
@@ -245,7 +251,11 @@ export function DataTable<T extends Record<string, any>>({
 								return (
 									<TableHead
 										key={String(column.key)}
-										className={cn(column.className)}>
+										className={cn(
+											variant === "organizations" &&
+												"text-xs font-semibold uppercase tracking-wider text-muted-foreground",
+											column.className,
+										)}>
 										{column.label}
 									</TableHead>
 								);
@@ -254,13 +264,20 @@ export function DataTable<T extends Record<string, any>>({
 							return (
 								<TableHead
 									key={String(column.key)}
-									className={cn("p-0", column.className)}>
+									className={cn(
+										"p-0",
+										variant === "organizations" &&
+											"text-xs font-semibold uppercase tracking-wider text-muted-foreground",
+										column.className,
+									)}>
 									<DropdownMenu>
 										<DropdownMenuTrigger asChild>
 											<Button
 												variant="ghost"
 												className={cn(
 													"relative h-10 w-full justify-between gap-1 px-4 font-medium hover:text-foreground hover:bg-muted cursor-pointer group rounded-none",
+													variant === "organizations" &&
+														"h-auto py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:bg-transparent",
 													hasActiveState && "text-primary font-bold",
 												)}>
 												<span className="flex items-center gap-2">
@@ -421,10 +438,18 @@ export function DataTable<T extends Record<string, any>>({
 						data.map((row, rowIndex) => (
 							<TableRow
 								key={rowIndex}
-								className={cn(onRowClick && "cursor-pointer")}
+								className={cn(
+									variant === "organizations" && "hover:bg-muted/30",
+									onRowClick && "cursor-pointer",
+								)}
 								onClick={() => onRowClick?.(row)}>
 								{columns.map((column) => (
-									<TableCell key={String(column.key)}>
+									<TableCell
+										key={String(column.key)}
+										className={cn(
+											variant === "organizations" && "py-3",
+											column.cellClassName,
+										)}>
 										{column.render
 											? column.render(row[column.key], row)
 											: String(row[column.key] || "")}

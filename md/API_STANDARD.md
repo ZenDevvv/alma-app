@@ -10,6 +10,7 @@ This document outlines the standard pattern for creating API calls in the EPP ap
 2. [Step 2: Create Service File](#step-2-create-service-file)
 3. [Step 3: Create React Query Hooks](#step-3-create-react-query-hooks)
 4. [Step 4: Create Zod Schema File](#step-4-create-zod-schema-file)
+5. [Step 5: Using Hooks in Pages](#step-5-using-hooks-in-pages)
 
 ---
 
@@ -287,16 +288,185 @@ export type Update{Resource} = z.infer<typeof Update{Resource}Schema>;
 
 ---
 
+## Step 5: Using Hooks in Pages
+
+When integrating hooks into your pages, **always refer to the Zod schema and service files** for the module you are working with. These files are the source of truth for response data types and request payload types.
+
+### Reference Files
+
+Before using any hook, check these files for the resource:
+
+| Purpose              | File                                 | What to look for                                                  |
+| -------------------- | ------------------------------------ | ----------------------------------------------------------------- |
+| Response & Payload Types | `app/zod/{resource}.zod.ts`          | All type definitions (`GetAll{Resource}s`, `Create{Resource}`, `Update{Resource}`, `{Resource}WithRelation`) |
+| Service Methods      | `app/services/{resource}-service.ts` | How each method calls the API and what response type it returns    |
+
+### Using GET hooks (List & Detail)
+
+When using `useGet{Resource}s` or `useGet{Resource}ById`, the **response data type** comes from the Zod schema file.
+
+#### Example: Fetching all organizations
+
+```typescript
+// 1. Check app/zod/organization.zod.ts for the response type:
+//    - GetAllOrganizations → { organizations: OrganizationWithRelation[], pagination?: {...}, count?: number }
+//
+// 2. Check app/services/organization-service.ts to confirm:
+//    - getAllOrganizations() returns ApiResponse<GetAllOrganizations>
+
+import { useGetOrganizations } from "~/hooks/use-organization";
+
+const MyPage = () => {
+    const { data, isLoading } = useGetOrganizations({
+        page: 1,
+        limit: 10,
+    });
+
+    // data is typed as GetAllOrganizations (from app/zod/organization.zod.ts)
+    // Access the list:  data?.organizations
+    // Access pagination: data?.pagination
+    // Access count:      data?.count
+};
+```
+
+#### Example: Fetching a single organization
+
+```typescript
+// 1. Check app/zod/organization.zod.ts for the response type:
+//    - OrganizationWithRelation → { id, name, description, code, isDeleted, createdAt, updatedAt }
+//
+// 2. Check app/services/organization-service.ts to confirm:
+//    - getOrganizationById() returns ApiResponse<OrganizationWithRelation>
+
+import { useGetOrganizationById } from "~/hooks/use-organization";
+
+const DetailPage = ({ organizationId }: { organizationId: string }) => {
+    const { data, isLoading } = useGetOrganizationById(organizationId);
+
+    // data is typed as OrganizationWithRelation (from app/zod/organization.zod.ts)
+    // Access fields: data?.id, data?.name, data?.code, etc.
+};
+```
+
+### Using CREATE hook
+
+When using `useCreate{Resource}`, the **payload type** comes from the Zod schema file.
+
+#### Example: Creating an organization
+
+```typescript
+// 1. Check app/zod/organization.zod.ts for the payload type:
+//    - CreateOrganization → { name: string, code: string, description?: string, isDeleted?: boolean }
+//    - It is OrganizationSchema with id, createdAt, updatedAt omitted
+//
+// 2. Check app/services/organization-service.ts to confirm:
+//    - createOrganization(data: CreateOrganization) accepts CreateOrganization as payload
+
+import { useCreateOrganization } from "~/hooks/use-organization";
+import type { CreateOrganization } from "~/zod/organization.zod";
+
+const CreatePage = () => {
+    const { mutate, isPending } = useCreateOrganization();
+
+    const handleSubmit = (formData: CreateOrganization) => {
+        // formData must match CreateOrganization type from app/zod/organization.zod.ts
+        mutate(formData, {
+            onSuccess: () => {
+                // Handle success (e.g., navigate, show toast)
+            },
+            onError: (error) => {
+                // Handle error
+            },
+        });
+    };
+};
+```
+
+### Using UPDATE hook
+
+When using `useUpdate{Resource}`, the **payload type** comes from the Zod schema file.
+
+#### Example: Updating an organization
+
+```typescript
+// 1. Check app/zod/organization.zod.ts for the payload type:
+//    - UpdateOrganization → Partial<CreateOrganization>
+//    - All fields are optional since it uses .partial()
+//
+// 2. Check app/services/organization-service.ts to confirm:
+//    - updateOrganization({ organizationId, data }) accepts UpdateOrganization as payload
+
+import { useUpdateOrganization } from "~/hooks/use-organization";
+import type { UpdateOrganization } from "~/zod/organization.zod";
+
+const EditPage = ({ organizationId }: { organizationId: string }) => {
+    const { mutate, isPending } = useUpdateOrganization();
+
+    const handleSubmit = (formData: UpdateOrganization) => {
+        // formData must match UpdateOrganization type from app/zod/organization.zod.ts
+        mutate(
+            { organizationId, data: formData },
+            {
+                onSuccess: () => {
+                    // Handle success
+                },
+                onError: (error) => {
+                    // Handle error
+                },
+            },
+        );
+    };
+};
+```
+
+### Using DELETE hook
+
+#### Example: Deleting an organization
+
+```typescript
+import { useDeleteOrganization } from "~/hooks/use-organization";
+
+const ListPage = () => {
+    const { mutate: deleteOrganization, isPending } = useDeleteOrganization();
+
+    const handleDelete = (organizationId: string) => {
+        deleteOrganization(
+            { organizationId },
+            {
+                onSuccess: () => {
+                    // Handle success
+                },
+                onError: (error) => {
+                    // Handle error
+                },
+            },
+        );
+    };
+};
+```
+
+### Key Points
+
+- **Always check `app/zod/{resource}.zod.ts` first** to understand the exact shape of response data and request payloads
+- **Always check `app/services/{resource}-service.ts`** to see the return types used in `ApiResponse<T>` — this tells you the structure of `data`
+- **GET hooks return data typed by the Zod schema**: `GetAll{Resource}s` for lists, `{Resource}WithRelation` for single items
+- **CREATE hooks expect payloads typed as `Create{Resource}`**: auto-generated fields (id, createdAt, updatedAt) are omitted
+- **UPDATE hooks expect payloads typed as `Update{Resource}`**: same as Create but all fields are optional (`.partial()`)
+- **The Zod schema is the single source of truth** for all types used across services, hooks, and pages
+
+---
+
 ## Quick Reference Checklist
 
 When adding a new resource API, create/modify the following files:
 
-| Step | File       | Location                             |
-| ---- | ---------- | ------------------------------------ |
-| 1    | Endpoints  | `app/configs/endpoints.ts`           |
-| 2    | Service    | `app/services/{resource}-service.ts` |
-| 3    | Hooks      | `app/hooks/use-{resource}.ts`        |
-| 4    | Zod Schema | `app/zod/{resource}.zod.ts`          |
+| Step | File           | Location                             |
+| ---- | -------------- | ------------------------------------ |
+| 1    | Endpoints      | `app/configs/endpoints.ts`           |
+| 2    | Service        | `app/services/{resource}-service.ts` |
+| 3    | Hooks          | `app/hooks/use-{resource}.ts`        |
+| 4    | Zod Schema     | `app/zod/{resource}.zod.ts`          |
+| 5    | Page Integration | Check Zod + Service before using hooks in pages |
 
 ---
 

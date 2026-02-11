@@ -1,14 +1,26 @@
-import { ArrowLeft, AlertCircle } from "lucide-react";
+import { ArrowLeft, AlertCircle, Plus, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Icon } from "@/components/ui/icon";
-import { Link, useParams } from "react-router";
+import { Switch } from "@/components/ui/switch";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import { Link, useParams, useSearchParams } from "react-router";
 import { DataTable, type DataTableColumn } from "~/components/molecule/data-table-updated";
 import { useGetOrganizationById } from "~/hooks/use-organization";
+import { useCreateUser, useUpdateUser } from "~/hooks/use-user";
+import { UpsertAdminForm } from "~/components/forms/upsert-admin-form";
 import { formatDate, getInitials, getOrgColor } from "~/utils/organization-utils";
+import type { CreateUser } from "~/zod/user.zod";
+import { toast } from "sonner";
 
 type UserRow = {
 	id: string;
@@ -35,62 +47,117 @@ function OrganizationDetailSkeleton() {
 	);
 }
 
-const userColumns: DataTableColumn<UserRow>[] = [
-	{
-		key: "name",
-		label: "Name",
-		className: "pl-6",
-		cellClassName: "pl-6",
-		render: (_, user) => (
-			<p className="text-sm font-medium text-foreground">{user.name}</p>
-		),
-	},
-	{
-		key: "email",
-		label: "Email",
-		render: (_, user) => (
-			<p className="text-sm text-muted-foreground">{user.email}</p>
-		),
-	},
-	{
-		key: "role",
-		label: "Role",
-		render: (_, user) => (
-			<Badge variant="outline" className="capitalize">
-				{user.role}
-			</Badge>
-		),
-	},
-	{
-		key: "subRole",
-		label: "Sub Role",
-		render: (_, user) => (
-			<span className="text-sm text-muted-foreground capitalize">
-				{user.subRole.replace("_", " ")}
-			</span>
-		),
-	},
-	{
-		key: "status",
-		label: "Status",
-		className: "text-center",
-		cellClassName: "text-center",
-		render: (_, user) => (
-			<Badge
-				className={`text-[11px] ${
-					user.status === "active"
-						? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400"
-						: "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-400"
-				}`}>
-				{user.status.charAt(0).toUpperCase() + user.status.slice(1)}
-			</Badge>
-		),
-	},
-];
-
 export default function OrganizationDetailPage() {
 	const params = useParams();
 	const orgId = params.id as string;
+	const [searchParams, setSearchParams] = useSearchParams();
+	const action = searchParams.get("action");
+	const editUserId = searchParams.get("userId") || "";
+	const isModalOpen = action === "create-admin" || action === "edit-admin";
+	const createUser = useCreateUser();
+	const updateUser = useUpdateUser();
+
+	const handleToggleStatus = async (user: UserRow) => {
+		const newStatus = user.status === "active" ? "inactive" : "active";
+		const mutationPromise = updateUser.mutateAsync({
+			userId: user.id,
+			data: { status: newStatus },
+		});
+
+		try {
+			await toast.promise(mutationPromise, {
+				loading: "Updating status...",
+				success: () => ({
+					message: `User ${newStatus === "active" ? "activated" : "deactivated"}`,
+				}),
+				error: (mutationError) => ({
+					message:
+						mutationError instanceof Error
+							? mutationError.message
+							: "Status Update Failed",
+				}),
+			});
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
+	const userColumns: DataTableColumn<UserRow>[] = [
+		{
+			key: "name",
+			label: "Name",
+			className: "pl-6",
+			cellClassName: "pl-6",
+			render: (_, user) => (
+				<p className="text-sm font-medium text-foreground">{user.name}</p>
+			),
+		},
+		{
+			key: "email",
+			label: "Email",
+			render: (_, user) => (
+				<p className="text-sm text-muted-foreground">{user.email}</p>
+			),
+		},
+		{
+			key: "role",
+			label: "Role",
+			render: (_, user) => (
+				<Badge variant="outline" className="capitalize">
+					{user.role}
+				</Badge>
+			),
+		},
+		{
+			key: "subRole",
+			label: "Sub Role",
+			render: (_, user) => (
+				<span className="text-sm text-muted-foreground capitalize">
+					{user.subRole.replace("_", " ")}
+				</span>
+			),
+		},
+		{
+			key: "status",
+			label: "Status",
+			className: "text-center",
+			cellClassName: "text-center",
+			render: (_, user) => (
+				<Badge
+					className={`text-[11px] ${
+						user.status === "active"
+							? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400"
+							: "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-400"
+					}`}>
+					{user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+				</Badge>
+			),
+		},
+		{
+			key: "id",
+			label: "Actions",
+			className: "text-center",
+			cellClassName: "text-center",
+			render: (_, user) => (
+				<div className="flex items-center justify-center gap-3">
+					<Switch
+						checked={user.status === "active"}
+						onCheckedChange={() => handleToggleStatus(user)}
+					/>
+					<Button
+						variant="ghost"
+						size="icon"
+						className="size-8"
+						onClick={() =>
+							setSearchParams({ action: "edit-admin", userId: user.id })
+						}
+					>
+						<Pencil className="size-4" />
+					</Button>
+				</div>
+			),
+		},
+	];
 
 	const { data: organization, isLoading } = useGetOrganizationById(orgId, {
 		fields:
@@ -136,6 +203,37 @@ export default function OrganizationDetailPage() {
 	const orgColor = getOrgColor(organization.id);
 	const orgInitials = getInitials(organization.name);
 	const isActive = !organization.isDeleted;
+
+	const handleAdminFormSubmit = async (data: CreateUser) => {
+		const isEdit = action === "edit-admin" && editUserId;
+		const mutationPromise = isEdit
+			? updateUser.mutateAsync({ userId: editUserId, data })
+			: createUser.mutateAsync(data);
+
+		try {
+			await toast.promise(mutationPromise, {
+				loading: isEdit ? "Updating Admin..." : "Creating Admin...",
+				success: () => ({
+					message: isEdit ? "Admin Updated" : "Admin Created",
+				}),
+				error: (mutationError) => ({
+					message:
+						mutationError instanceof Error
+							? mutationError.message
+							: isEdit
+								? "Admin Update Failed"
+								: "Admin Creation Failed",
+				}),
+			});
+			setSearchParams({});
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
+	const handleAdminCancel = () => {
+		setSearchParams({});
+	};
 
 	return (
 		<div className="space-y-6">
@@ -252,10 +350,19 @@ export default function OrganizationDetailPage() {
 			{/* Users Table */}
 			<Card className="border-border/50">
 				<CardHeader>
-					<CardTitle className="flex items-center gap-2 text-base">
-						<Icon name="group" size={20} />
-						Users ({users.length})
-					</CardTitle>
+					<div className="flex justify-between items-center">
+						<CardTitle className="flex items-center gap-2 text-base">
+							<Icon name="group" size={20} />
+							Users ({users.length})
+						</CardTitle>
+						<Button
+							size="sm"
+							onClick={() => setSearchParams({ action: "create-admin" })}
+						>
+							<Plus className="size-4 mr-1" />
+							Create Admin
+						</Button>
+					</div>
 				</CardHeader>
 				<CardContent className="p-0">
 					<DataTable
@@ -266,6 +373,33 @@ export default function OrganizationDetailPage() {
 					/>
 				</CardContent>
 			</Card>
+
+			<Dialog
+				open={isModalOpen}
+				onOpenChange={(open) => {
+					if (!open) {
+						setSearchParams({});
+					}
+				}}>
+				<DialogContent className="sm:max-w-2xl">
+					<DialogHeader>
+						<DialogTitle>
+							{action === "edit-admin" ? "Edit Admin" : "Create Admin"}
+						</DialogTitle>
+						<DialogDescription>
+							{action === "edit-admin"
+								? "Update the admin details below."
+								: "Enter admin details below."}
+						</DialogDescription>
+					</DialogHeader>
+					<UpsertAdminForm
+						onSubmit={handleAdminFormSubmit}
+						onCancel={handleAdminCancel}
+						userId={editUserId}
+						orgId={orgId}
+					/>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

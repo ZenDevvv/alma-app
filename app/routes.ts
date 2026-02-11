@@ -17,7 +17,6 @@ export default [
 		route("/organizations", "routes/superadmin/organizations.tsx"),
 		route("/organizations/new", "routes/superadmin/upsert-organization.tsx"),
 		route("/organizations/:id", "routes/superadmin/organization-details.tsx"),
-		route("/org-admins", "routes/superadmin/org-admins.tsx"),
 		route("/user-management", "routes/superadmin/user-management.tsx"),
 		route("/announcements", "routes/superadmin/announcements.tsx"),
 		route("/platform-analytics", "routes/superadmin/platform-analytics.tsx"),

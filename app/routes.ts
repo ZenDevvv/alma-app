@@ -30,6 +30,7 @@ export default [
 		"layouts/org-admin-layout.tsx",
 		prefix("admin", [
 			route("/", "routes/org-admin/dashboard.tsx"),
+			route("/courses", "routes/org-admin/courses.tsx"),
 		]),
 	),
 ] satisfies RouteConfig;

@@ -41,37 +41,37 @@ interface OrgAdminSidebarProps {
 }
 
 const mainNavItems = [
-	{ href: "/org-admin", icon: LayoutDashboard, label: "Dashboard", end: true },
-	{ href: "/org-admin/courses", icon: BookOpen, label: "Courses", end: false },
-	{ href: "/org-admin/sections", icon: Layers, label: "Sections", end: false },
-	{ href: "/org-admin/announcements", icon: Megaphone, label: "Announcements", end: false },
+	{ href: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true },
+	{ href: "/admin/courses", icon: BookOpen, label: "Courses", end: false },
+	{ href: "/admin/sections", icon: Layers, label: "Sections", end: false },
+	{ href: "/admin/announcements", icon: Megaphone, label: "Announcements", end: false },
 ];
 
 const peopleNavItems = [
-	{ href: "/org-admin/instructors", icon: GraduationCap, label: "Instructors", end: false },
-	{ href: "/org-admin/students", icon: Users, label: "Students", end: false },
-	{ href: "/org-admin/user-management", icon: UserCog, label: "User Management", end: false },
+	{ href: "/admin/instructors", icon: GraduationCap, label: "Instructors", end: false },
+	{ href: "/admin/students", icon: Users, label: "Students", end: false },
+	{ href: "/admin/user-management", icon: UserCog, label: "User Management", end: false },
 ];
 
 const academicNavItems = [
-	{ href: "/org-admin/categories", icon: FolderTree, label: "Categories", end: false },
-	{ href: "/org-admin/faculties", icon: Building2, label: "Faculties", end: false },
-	{ href: "/org-admin/programs", icon: FileStack, label: "Programs", end: false },
-	{ href: "/org-admin/academic-terms", icon: CalendarRange, label: "Academic Terms", end: false },
-	{ href: "/org-admin/enrollment", icon: UserPlus, label: "Enrollment", end: false },
-	{ href: "/org-admin/academic-calendar", icon: CalendarDays, label: "Academic Calendar", end: false },
+	{ href: "/admin/categories", icon: FolderTree, label: "Categories", end: false },
+	{ href: "/admin/faculties", icon: Building2, label: "Faculties", end: false },
+	{ href: "/admin/programs", icon: FileStack, label: "Programs", end: false },
+	{ href: "/admin/academic-terms", icon: CalendarRange, label: "Academic Terms", end: false },
+	{ href: "/admin/enrollment", icon: UserPlus, label: "Enrollment", end: false },
+	{ href: "/admin/academic-calendar", icon: CalendarDays, label: "Academic Calendar", end: false },
 ];
 
 const performanceNavItems = [
-	{ href: "/org-admin/instructor-performance", icon: Award, label: "Instructor Performance", end: false },
-	{ href: "/org-admin/student-performance", icon: TrendingUp, label: "Student Performance", end: false },
-	{ href: "/org-admin/at-risk-students", icon: AlertTriangle, label: "At-Risk Students", end: false },
-	{ href: "/org-admin/reports", icon: BarChart3, label: "Reports", end: false },
+	{ href: "/admin/instructor-performance", icon: Award, label: "Instructor Performance", end: false },
+	{ href: "/admin/student-performance", icon: TrendingUp, label: "Student Performance", end: false },
+	{ href: "/admin/at-risk-students", icon: AlertTriangle, label: "At-Risk Students", end: false },
+	{ href: "/admin/reports", icon: BarChart3, label: "Reports", end: false },
 ];
 
 const settingsNavItems = [
-	{ href: "/org-admin/terminology", icon: Languages, label: "Terminology", end: false },
-	{ href: "/org-admin/settings", icon: Settings, label: "Settings", end: false },
+	{ href: "/admin/terminology", icon: Languages, label: "Terminology", end: false },
+	{ href: "/admin/settings", icon: Settings, label: "Settings", end: false },
 ];
 
 const navSections = [

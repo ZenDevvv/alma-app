@@ -10,6 +10,12 @@ import {
 	X,
 	User,
 	ChevronUp,
+	Activity,
+	Megaphone,
+	BarChart3,
+	ToggleRight,
+	Mail,
+	Wrench,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -36,19 +42,63 @@ const mainNavItems = [
 		end: false,
 	},
 	{
+		href: "/admin/org-admins",
+		icon: ShieldCheck,
+		label: "Organization Admins",
+		end: false,
+	},
+	{
 		href: "/admin/user-management",
 		icon: UsersRound,
 		label: "User Management",
 		end: false,
 	},
-	{ href: "/admin/admins", icon: ShieldCheck, label: "Admins", end: false },
+	{
+		href: "/admin/announcements",
+		icon: Megaphone,
+		label: "Announcements",
+		end: false,
+	},
+	{
+		href: "/admin/platform-analytics",
+		icon: BarChart3,
+		label: "Platform Analytics",
+		end: false,
+	},
 ];
 
-const systemNavItems = [
+const logsNavItems = [
+	{
+		href: "/admin/activity-logs",
+		icon: Activity,
+		label: "Activity Logs",
+		end: false,
+	},
 	{
 		href: "/admin/audit-logs",
 		icon: ScrollText,
 		label: "Audit Logs",
+		end: false,
+	},
+];
+
+const systemNavItems = [
+	{
+		href: "/admin/feature-flags",
+		icon: ToggleRight,
+		label: "Feature Flags",
+		end: false,
+	},
+	{
+		href: "/admin/email-templates",
+		icon: Mail,
+		label: "Email Templates",
+		end: false,
+	},
+	{
+		href: "/admin/maintenance",
+		icon: Wrench,
+		label: "Maintenance",
 		end: false,
 	},
 	{
@@ -121,6 +171,32 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
 								{item.label}
 							</NavLink>
 						))}
+					</div>
+
+					{/* Logs Section */}
+					<div className="mt-6">
+						<p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-widest text-white/40">
+							Logs
+						</p>
+						<div className="flex flex-col gap-1">
+							{logsNavItems.map((item) => (
+								<NavLink
+									key={item.href}
+									to={item.href}
+									end={item.end}
+									className={({ isActive }) =>
+										cn(
+											"flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+											isActive
+												? "bg-primary text-primary-foreground"
+												: "text-white/70 hover:bg-white/10 hover:text-white",
+										)
+									}>
+									<item.icon className="h-[18px] w-[18px]" />
+									{item.label}
+								</NavLink>
+							))}
+						</div>
 					</div>
 
 					{/* System Section */}

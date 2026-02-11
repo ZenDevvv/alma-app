@@ -83,12 +83,14 @@ class {Resource}Service extends APIService {
         }
     };
 
-    create{Resource} = async (data: Create{Resource}) => {
+    create{Resource} = async (data: Create{Resource} | FormData) => {
         try {
-            const response: ApiResponse<{ {resource}: {Resource}WithRelation }> = await apiClient.post(
-                RESOURCE.CREATE,
-                data,
-            );
+            let response: ApiResponse<{ {resource}: {Resource}WithRelation }>;
+            if (data instanceof FormData) {
+                response = await apiClient.postFormData(RESOURCE.CREATE, data);
+            } else {
+                response = await apiClient.post(RESOURCE.CREATE, data);
+            }
             return response.data;
         } catch (error: any) {
             throw new Error(
@@ -97,9 +99,26 @@ class {Resource}Service extends APIService {
         }
     };
 
-    update{Resource} = async ({resource}Id: string, data: Update{Resource}) => {
+    update{Resource} = async ({
+        {resource}Id,
+        data,
+    }: {
+        {resource}Id: string;
+        data: Update{Resource} | FormData;
+    }) => {
         try {
-            const response = await apiClient.patch(RESOURCE.UPDATE.replace(":id", {resource}Id), data);
+            let response: ApiResponse<{ {resource}: {Resource}WithRelation }>;
+            if (data instanceof FormData) {
+                response = await apiClient.patchFormData(
+                    RESOURCE.UPDATE.replace(":id", {resource}Id),
+                    data,
+                );
+            } else {
+                response = await apiClient.patch(
+                    RESOURCE.UPDATE.replace(":id", {resource}Id),
+                    data,
+                );
+            }
             return response.data;
         } catch (error: any) {
             throw new Error(
@@ -130,6 +149,7 @@ export default new {Resource}Service();
 - **Type the response** using `ApiResponse<T>` generic
 - **Handle errors consistently** with the standard error message extraction
 - **Export as singleton** using `export default new {Resource}Service()`
+- **Always support both JSON and FormData** in `create` and `update` methods — accept `Create{Resource} | FormData` and `Update{Resource} | FormData`, then use `apiClient.postFormData` / `apiClient.patchFormData` for `FormData` and `apiClient.post` / `apiClient.patch` for JSON
 
 ---
 
@@ -181,7 +201,7 @@ export const useGet{Resource}ById = ({resource}Id: string, apiParams?: ApiQueryP
 // CREATE
 export const useCreate{Resource} = () => {
     return useMutation({
-        mutationFn: (data: Create{Resource}) => {
+        mutationFn: (data: Create{Resource} | FormData) => {
             return {resource}Service.create{Resource}(data);
         },
         onSuccess: () => {
@@ -193,8 +213,8 @@ export const useCreate{Resource} = () => {
 // UPDATE
 export const useUpdate{Resource} = () => {
     return useMutation({
-        mutationFn: ({ {resource}Id, data }: { {resource}Id: string; data: Update{Resource} }) => {
-            return {resource}Service.update{Resource}({resource}Id, data);
+        mutationFn: ({ {resource}Id, data }: { {resource}Id: string; data: Update{Resource} | FormData }) => {
+            return {resource}Service.update{Resource}({ {resource}Id, data });
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["{resource}s"] });

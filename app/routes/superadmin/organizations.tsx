@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Icon } from "@/components/ui/icon";
 import {
@@ -25,6 +25,7 @@ type OrganizationRow = {
 	id: string;
 	name: string;
 	code: string;
+	logo?: string | null;
 	usersCount: number;
 	description: string;
 	createdAt: string | Date | null | undefined;
@@ -46,7 +47,7 @@ export default function OrganizationsPage() {
 		limit: PAGE_LIMIT,
 		query: searchQuery,
 		count: true,
-		fields: "id,name,code,description,createdAt,updatedAt,isDeleted,users.id",
+		fields: "id,name,code,description,logo,background,createdAt,updatedAt,isDeleted,users.id",
 	});
 
 	const organizations = data?.organizations || [];
@@ -56,6 +57,7 @@ export default function OrganizationsPage() {
 				id: org.id,
 				name: org.name,
 				code: org.code,
+				logo: org.logo,
 				usersCount: Array.isArray(org.users) ? org.users.length : 0,
 				description: org.description || "-",
 				createdAt: org.createdAt,
@@ -111,6 +113,7 @@ export default function OrganizationsPage() {
 			render: (_, org) => (
 				<div className="flex items-center gap-3">
 					<Avatar className="size-10">
+						<AvatarImage src={org.logo || undefined} alt={org.name} />
 						<AvatarFallback
 							className={`${org.color} text-white text-xs font-semibold`}>
 							{org.initials}

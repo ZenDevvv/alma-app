@@ -37,12 +37,14 @@ class OrganizationService extends APIService {
 		}
 	};
 
-	createOrganization = async (data: CreateOrganization) => {
+	createOrganization = async (data: CreateOrganization | FormData) => {
 		try {
-			const response: ApiResponse<OrganizationWithRelation> = await apiClient.post(
-				ORGANIZATION.CREATE,
-				data,
-			);
+			let response: ApiResponse<OrganizationWithRelation>;
+			if (data instanceof FormData) {
+				response = await apiClient.postFormData(ORGANIZATION.CREATE, data);
+			} else {
+				response = await apiClient.post(ORGANIZATION.CREATE, data);
+			}
 			return response.data;
 		} catch (error: any) {
 			throw new Error(
@@ -56,11 +58,21 @@ class OrganizationService extends APIService {
 		data,
 	}: {
 		organizationId: string;
-		data: UpdateOrganization;
+		data: UpdateOrganization | FormData;
 	}) => {
 		try {
-			const response: ApiResponse<{ organization: OrganizationWithRelation }> =
-				await apiClient.patch(ORGANIZATION.UPDATE.replace(":id", organizationId), data);
+			let response: ApiResponse<{ organization: OrganizationWithRelation }>;
+			if (data instanceof FormData) {
+				response = await apiClient.patchFormData(
+					ORGANIZATION.UPDATE.replace(":id", organizationId),
+					data,
+				);
+			} else {
+				response = await apiClient.patch(
+					ORGANIZATION.UPDATE.replace(":id", organizationId),
+					data,
+				);
+			}
 			return response.data;
 		} catch (error: any) {
 			throw new Error(

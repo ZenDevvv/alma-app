@@ -23,7 +23,7 @@ export function LoginForm() {
 		setIsLoading(true);
 		try {
 			const user = await login(identifier, password);
-			navigate("/admin");
+			navigate("/superadmin");
 		} catch (err) {
 			console.error("Login failed:", err);
 		} finally {

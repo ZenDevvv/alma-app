@@ -7,11 +7,12 @@ export const OrganizationSchema = z.object({
 	name: z.string().min(1),
 	description: z.string().optional(),
 	code: z.string().min(1),
+	logo: z.string().optional(),
+	background: z.string().optional(),
 	isDeleted: z.boolean(),
 	createdAt: z.coerce.date(),
 	updatedAt: z.coerce.date(),
 });
-
 export const OrganizationWithRelationSchema = OrganizationSchema.extend({
 	users: z.array(UserWithRelationSchema).optional(),
 });
@@ -35,6 +36,8 @@ export const CreateOrganizationSchema = OrganizationSchema.omit({
 	updatedAt: true,
 }).partial({
 	description: true,
+	logo: true,
+	background: true,
 	isDeleted: true,
 });
 

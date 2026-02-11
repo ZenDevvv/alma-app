@@ -42,12 +42,6 @@ const mainNavItems = [
 		end: false,
 	},
 	{
-		href: "/superadmin/org-admins",
-		icon: ShieldCheck,
-		label: "Organization Admins",
-		end: false,
-	},
-	{
 		href: "/superadmin/user-management",
 		icon: UsersRound,
 		label: "User Management",
@@ -137,9 +131,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
 						<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-xs font-bold text-primary-foreground">
 							1B
 						</div>
-						<span className="text-lg font-bold text-white">
-							1BIS LMS
-						</span>
+						<span className="text-lg font-bold text-white">1BIS LMS</span>
 					</div>
 					<Button
 						variant="ghost"
@@ -241,9 +233,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
 									<p className="truncate text-sm font-medium text-white">
 										Super Admin
 									</p>
-									<p className="truncate text-xs text-white/50">
-										admin@1bis.com
-									</p>
+									<p className="truncate text-xs text-white/50">admin@1bis.com</p>
 								</div>
 								<ChevronUp className="h-4 w-4 shrink-0 text-white/40" />
 							</button>

@@ -36,7 +36,7 @@ export const useGetOrganizationById = (organizationId: string, apiParams?: ApiQu
 
 export const useCreateOrganization = () => {
 	return useMutation({
-		mutationFn: (data: CreateOrganization) => {
+		mutationFn: (data: CreateOrganization | FormData) => {
 			return organizationService.createOrganization(data);
 		},
 		onSuccess: () => {
@@ -47,7 +47,13 @@ export const useCreateOrganization = () => {
 
 export const useUpdateOrganization = () => {
 	return useMutation({
-		mutationFn: ({ organizationId, data }: { organizationId: string; data: UpdateOrganization }) => {
+		mutationFn: ({
+			organizationId,
+			data,
+		}: {
+			organizationId: string;
+			data: UpdateOrganization | FormData;
+		}) => {
 			return organizationService.updateOrganization({ organizationId, data });
 		},
 		onSuccess: () => {

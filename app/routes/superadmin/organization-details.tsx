@@ -2,7 +2,7 @@ import { ArrowLeft, AlertCircle, Plus, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Icon } from "@/components/ui/icon";
 import { Switch } from "@/components/ui/switch";
@@ -161,7 +161,7 @@ export default function OrganizationDetailPage() {
 
 	const { data: organization, isLoading } = useGetOrganizationById(orgId, {
 		fields:
-			"id,name,code,description,isDeleted,createdAt,updatedAt,users.id,users.email,users.userName,users.role,users.subRole,users.status,users.person.personalInfo",
+			"id,name,code,description,logo,background,isDeleted,createdAt,updatedAt,users.id,users.email,users.userName,users.role,users.subRole,users.status,users.person.personalInfo",
 	});
 
 	if (isLoading) {
@@ -238,37 +238,70 @@ export default function OrganizationDetailPage() {
 	return (
 		<div className="space-y-6">
 			{/* Header */}
-			<div className="flex items-center gap-4">
+			<div className="space-y-4">
 				<Button variant="ghost" size="icon" asChild>
 					<Link to="/superadmin/organizations">
 						<ArrowLeft className="size-4" />
 					</Link>
 				</Button>
-				<Avatar className="size-12">
-					<AvatarFallback className={`${orgColor} text-white text-sm font-semibold`}>
-						{orgInitials}
-					</AvatarFallback>
-				</Avatar>
-				<div className="flex-1">
-					<div className="flex items-center gap-3">
-						<h1 className="text-2xl font-bold tracking-tight text-foreground">
-							{organization.name}
-						</h1>
-						<Badge variant="outline">{organization.code}</Badge>
-						<Badge
-							className={`text-[11px] ${
-								isActive
-									? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400"
-									: "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-400"
-							}`}>
-							{isActive ? "Active" : "Inactive"}
-						</Badge>
+
+				<div className="overflow-hidden rounded-2xl border border-border/60">
+					<div
+						className="relative min-h-[220px] px-5 pb-6 pt-5 sm:min-h-[250px] sm:px-7 sm:pt-7"
+						style={
+							organization.background
+								? {
+										backgroundImage: `linear-gradient(90deg, rgb(15 23 42 / 0.85), rgb(30 64 175 / 0.7)), url(${organization.background})`,
+										backgroundSize: "cover",
+										backgroundPosition: "center",
+									}
+								: undefined
+						}>
+						{!organization.background && (
+							<div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-blue-700 to-blue-500" />
+						)}
+
+						<div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.2)_1px,transparent_0)] [background-size:24px_24px] opacity-35" />
+
+						<div className="relative z-10 flex h-full items-end gap-4 sm:gap-5">
+							<div className="rounded-2xl bg-background/95 p-2 shadow-xl backdrop-blur-sm">
+								<Avatar className="size-20 rounded-xl sm:size-24">
+									<AvatarImage src={organization.logo || undefined} alt={organization.name} />
+									<AvatarFallback
+										className={`${orgColor} rounded-xl text-2xl font-semibold text-white`}>
+										{orgInitials}
+									</AvatarFallback>
+								</Avatar>
+							</div>
+
+							<div className="flex-1 pb-1">
+								<div className="flex flex-wrap items-center gap-2.5">
+									<h1 className="text-2xl font-bold tracking-tight text-white sm:text-4xl">
+										{organization.name}
+									</h1>
+									<Badge variant="secondary" className="bg-white/15 text-white">
+										{organization.code}
+									</Badge>
+									<Badge
+										className={`text-[11px] ${
+											isActive
+												? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400"
+												: "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-400"
+										}`}>
+										{isActive ? "Active" : "Inactive"}
+									</Badge>
+								</div>
+								{organization.description && (
+									<p className="mt-2 max-w-3xl text-sm text-blue-50 sm:text-base">
+										{organization.description}
+									</p>
+								)}
+								<p className="mt-1 text-xs text-blue-100 sm:text-sm">
+									ID: #{organization.id}
+								</p>
+							</div>
+						</div>
 					</div>
-					{organization.description && (
-						<p className="text-sm text-muted-foreground mt-1">
-							{organization.description}
-						</p>
-					)}
 				</div>
 			</div>
 

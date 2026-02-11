@@ -19,7 +19,7 @@ import { useGetOrganizationById } from "~/hooks/use-organization";
 import { useCreateUser, useUpdateUser } from "~/hooks/use-user";
 import { UpsertAdminForm } from "~/components/forms/upsert-admin-form";
 import { formatDate, getInitials, getOrgColor } from "~/utils/organization-utils";
-import type { CreateUser } from "~/zod/user.zod";
+import type { CreateUser, UpdateUser } from "~/zod/user.zod";
 import { toast } from "sonner";
 
 type UserRow = {
@@ -204,11 +204,11 @@ export default function OrganizationDetailPage() {
 	const orgInitials = getInitials(organization.name);
 	const isActive = !organization.isDeleted;
 
-	const handleAdminFormSubmit = async (data: CreateUser) => {
+	const handleAdminFormSubmit = async (data: CreateUser | UpdateUser) => {
 		const isEdit = action === "edit-admin" && editUserId;
 		const mutationPromise = isEdit
 			? updateUser.mutateAsync({ userId: editUserId, data })
-			: createUser.mutateAsync(data);
+			: createUser.mutateAsync(data as CreateUser);
 
 		try {
 			await toast.promise(mutationPromise, {

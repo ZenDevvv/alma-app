@@ -5,25 +5,26 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CreateUserSchema, type CreateUser } from "~/zod/user.zod";
+import {
+	CreateUserSchema,
+	UpdateUserSchema,
+	type CreateUser,
+	type UpdateUser,
+	type User,
+} from "~/zod/user.zod";
 import { useGetUserById } from "~/hooks/use-user";
 
 interface UpsertAdminFormProps {
-	onSubmit: (data: CreateUser) => void;
+	onSubmit: (data: CreateUser | UpdateUser) => void;
 	onCancel: () => void;
 	userId?: string;
 	orgId: string;
 }
 
-export function UpsertAdminForm({
-	onSubmit,
-	onCancel,
-	userId = "",
-	orgId,
-}: UpsertAdminFormProps) {
+export function UpsertAdminForm({ onSubmit, onCancel, userId = "", orgId }: UpsertAdminFormProps) {
 	const { data: userData, isLoading: isUserLoading } = useGetUserById(userId, {
 		fields: "userName,email,status",
-	});
+	}) as { data: Partial<User> | undefined; isLoading: boolean };
 	const isEditing = !!userId;
 
 	const defaultValues: CreateUser = {
@@ -43,15 +44,21 @@ export function UpsertAdminForm({
 		setValue,
 		formState: { errors },
 	} = useForm<CreateUser>({
-		resolver: zodResolver(CreateUserSchema),
+		resolver: zodResolver(isEditing ? UpdateUserSchema : CreateUserSchema) as any,
 		defaultValues,
 	});
 
 	useEffect(() => {
 		if (isEditing && userData && !isUserLoading) {
-			setValue("userName", userData.userName || "");
-			setValue("email", userData.email || "");
-			setValue("status", userData.status || "active");
+			if (userData.userName) {
+				setValue("userName", userData.userName);
+			}
+			if (userData.email) {
+				setValue("email", userData.email);
+			}
+			if (userData.status) {
+				setValue("status", userData.status);
+			}
 		}
 	}, [userData, isUserLoading, isEditing, setValue]);
 
@@ -73,11 +80,7 @@ export function UpsertAdminForm({
 		<form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
 			<div className="grid gap-1">
 				<Label htmlFor="userName">Username</Label>
-				<Input
-					id="userName"
-					{...register("userName")}
-					placeholder="Enter username"
-				/>
+				<Input id="userName" {...register("userName")} placeholder="Enter username" />
 				{errors.userName && (
 					<p className="text-sm text-destructive">{errors.userName.message}</p>
 				)}
@@ -90,9 +93,7 @@ export function UpsertAdminForm({
 					{...register("email")}
 					placeholder="admin@example.com"
 				/>
-				{errors.email && (
-					<p className="text-sm text-destructive">{errors.email.message}</p>
-				)}
+				{errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
 			</div>
 			{!isEditing && (
 				<div className="grid gap-1">

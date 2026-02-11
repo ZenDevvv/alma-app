@@ -15,6 +15,8 @@ export default [
 	layout("layouts/admin-layout.tsx", prefix("superadmin", [
 		route("/", "routes/superadmin/dashboard.tsx"),
 		route("/organizations", "routes/superadmin/organizations.tsx"),
+		route("/organizations/new", "routes/superadmin/upsert-organization.tsx"),
+		route("/organizations/:id", "routes/superadmin/organization-details.tsx"),
 		route("/org-admins", "routes/superadmin/org-admins.tsx"),
 		route("/user-management", "routes/superadmin/user-management.tsx"),
 		route("/announcements", "routes/superadmin/announcements.tsx"),

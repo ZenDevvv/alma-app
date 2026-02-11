@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,54 +14,29 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { DataTable, type DataTableColumn } from "~/components/molecule/data-table-updated";
-import { useGetOrganizations } from "~/hooks/use-organization";
+import {
+	useGetOrganizations,
+} from "~/hooks/use-organization";
+import { formatDate, getInitials, getOrgColor } from "~/utils/organization-utils";
 
 const PAGE_LIMIT = 10;
-const ORG_COLORS = [
-	"bg-indigo-500",
-	"bg-blue-500",
-	"bg-emerald-500",
-	"bg-amber-500",
-	"bg-rose-500",
-	"bg-cyan-500",
-];
 
 type OrganizationRow = {
 	id: string;
 	name: string;
 	code: string;
+	usersCount: number;
 	description: string;
-	createdAt: Date;
-	updatedAt: Date;
+	createdAt: string | Date | null | undefined;
+	updatedAt: string | Date | null | undefined;
 	isDeleted: boolean;
 	initials: string;
 	color: string;
 	status: "active" | "inactive";
 };
 
-function getInitials(name: string) {
-	return name
-		.trim()
-		.split(/\s+/)
-		.slice(0, 2)
-		.map((part) => part[0]?.toUpperCase() ?? "")
-		.join("");
-}
-
-function getOrgColor(id: string) {
-	const hash = id.split("").reduce((sum, char) => sum + char.charCodeAt(0), 0);
-	return ORG_COLORS[hash % ORG_COLORS.length];
-}
-
-function formatDate(date: Date) {
-	return new Intl.DateTimeFormat("en-US", {
-		year: "numeric",
-		month: "short",
-		day: "2-digit",
-	}).format(date);
-}
-
 export default function OrganizationsPage() {
+	const navigate = useNavigate();
 	const [statusFilter, setStatusFilter] = useState("all");
 	const [currentPage, setCurrentPage] = useState(1);
 	const [searchQuery, setSearchQuery] = useState("");
@@ -70,6 +46,7 @@ export default function OrganizationsPage() {
 		limit: PAGE_LIMIT,
 		query: searchQuery,
 		count: true,
+		fields: "id,name,code,description,createdAt,updatedAt,isDeleted,users.id",
 	});
 
 	const organizations = data?.organizations || [];
@@ -79,6 +56,7 @@ export default function OrganizationsPage() {
 				id: org.id,
 				name: org.name,
 				code: org.code,
+				usersCount: Array.isArray(org.users) ? org.users.length : 0,
 				description: org.description || "-",
 				createdAt: org.createdAt,
 				updatedAt: org.updatedAt,
@@ -153,6 +131,17 @@ export default function OrganizationsPage() {
 			),
 		},
 		{
+			key: "usersCount",
+			label: "Users",
+			className: "text-center",
+			cellClassName: "text-center",
+			render: (_, org) => (
+				<p className="text-sm font-medium text-foreground">
+					{org.usersCount.toLocaleString()}
+				</p>
+			),
+		},
+		{
 			key: "description",
 			label: "Description",
 			render: (_, org) => (
@@ -212,7 +201,6 @@ export default function OrganizationsPage() {
 
 	return (
 		<div className="space-y-6">
-
 			{/* Header */}
 			<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 				<div>
@@ -223,7 +211,10 @@ export default function OrganizationsPage() {
 						Manage schools, universities, and storage usage.
 					</p>
 				</div>
-				<Button size="sm" className="gap-2">
+				<Button
+					size="sm"
+					className="gap-2"
+					onClick={() => navigate("/superadmin/organizations/new")}>
 					<Icon name="add" size={18} />
 					Create Organization
 				</Button>
@@ -308,6 +299,7 @@ export default function OrganizationsPage() {
 						data={isLoading ? [] : filteredOrgs}
 						variant="organizations"
 						className="rounded-none"
+						onRowClick={(row) => navigate(`/superadmin/organizations/${row.id}`)}
 					/>
 
 					{/* Pagination */}
@@ -348,17 +340,17 @@ export default function OrganizationsPage() {
 							{[1, 2, 3]
 								.filter((page) => page <= totalPages)
 								.map((page) => (
-								<Button
-									key={page}
-									variant={
-										currentPage === page ? "default" : "ghost"
-									}
-									size="icon"
-									className={`size-8 text-xs ${currentPage === page ? "" : "text-muted-foreground"}`}
-									onClick={() => setCurrentPage(page)}>
-									{page}
-								</Button>
-							))}
+									<Button
+										key={page}
+										variant={
+											currentPage === page ? "default" : "ghost"
+										}
+										size="icon"
+										className={`size-8 text-xs ${currentPage === page ? "" : "text-muted-foreground"}`}
+										onClick={() => setCurrentPage(page)}>
+										{page}
+									</Button>
+								))}
 							{totalPages > 3 && (
 								<>
 									<span className="px-1 text-xs text-muted-foreground">

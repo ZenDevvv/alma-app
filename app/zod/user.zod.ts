@@ -1,6 +1,5 @@
 import { z } from "zod";
-import type { Person } from "./person.zod";
-import type { Pagination } from "~/types/pagination";
+import { PersonSchema } from "./person.zod";
 
 // ─── Enums matching Prisma ───────────────────────────────────────────
 
@@ -38,7 +37,22 @@ export const UserSchema = z.object({
 	orgId: z.string().optional(),
 });
 
-export type User = z.infer<typeof UserSchema>;
+export const UserWithRelationSchema = UserSchema.extend({
+	person: PersonSchema.optional(),
+});
+
+export const GetAllUsersSchema = z.object({
+	users: z.array(UserWithRelationSchema),
+	pagination: z
+		.object({
+			page: z.number(),
+			limit: z.number(),
+			total: z.number(),
+			totalPages: z.number(),
+		})
+		.optional(),
+	count: z.number().optional(),
+});
 
 export const CreateUserSchema = UserSchema.omit({
 	id: true,
@@ -52,8 +66,6 @@ export const CreateUserSchema = UserSchema.omit({
 	orgId: true,
 });
 
-export type CreateUser = z.infer<typeof CreateUserSchema>;
-
 export const UpdateUserSchema = UserSchema.omit({
 	id: true,
 	createdAt: true,
@@ -61,14 +73,8 @@ export const UpdateUserSchema = UserSchema.omit({
 	isDeleted: true,
 }).partial();
 
+export type User = z.infer<typeof UserSchema>;
+export type UserWithRelation = z.infer<typeof UserWithRelationSchema>;
+export type GetAllUsers = z.infer<typeof GetAllUsersSchema>;
+export type CreateUser = z.infer<typeof CreateUserSchema>;
 export type UpdateUser = z.infer<typeof UpdateUserSchema>;
-
-export type UserWithRelation = User & {
-	person: Person;
-};
-
-export type GetAllUsers = {
-	users: UserWithRelation[];
-	pagination: Pagination;
-	count: number;
-};

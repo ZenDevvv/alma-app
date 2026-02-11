@@ -506,3 +506,142 @@ export const MOCK_PRODUCTS: Product[] = [
 		image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1000&auto=format&fit=crop",
 	},
 ];
+
+export type OrgAdmin = {
+	id: string;
+	name: string;
+	email: string;
+	initials: string;
+	color: string;
+	role: "owner" | "admin" | "manager";
+	status: "active" | "inactive" | "pending";
+	organizationId: string;
+	organizationName: string;
+	organizationInitials: string;
+	organizationColor: string;
+	lastLogin: string;
+	addedAt: string;
+};
+
+export const MOCK_ORG_ADMINS: OrgAdmin[] = [
+	{
+		id: "OA-001",
+		name: "John Doe",
+		email: "john.d@lincoln.edu",
+		initials: "JD",
+		color: "bg-blue-500",
+		role: "owner",
+		status: "active",
+		organizationId: "ORG-1002",
+		organizationName: "Lincoln High School",
+		organizationInitials: "LH",
+		organizationColor: "bg-indigo-500",
+		lastLogin: "2 hours ago",
+		addedAt: "Jan 15, 2025",
+	},
+	{
+		id: "OA-002",
+		name: "Sarah Smith",
+		email: "s.smith@state.edu",
+		initials: "SS",
+		color: "bg-violet-500",
+		role: "owner",
+		status: "active",
+		organizationId: "ORG-3341",
+		organizationName: "State University",
+		organizationInitials: "SU",
+		organizationColor: "bg-blue-500",
+		lastLogin: "5 hours ago",
+		addedAt: "Mar 02, 2025",
+	},
+	{
+		id: "OA-003",
+		name: "Mike Ross",
+		email: "m.ross@westside.edu",
+		initials: "MR",
+		color: "bg-emerald-500",
+		role: "admin",
+		status: "inactive",
+		organizationId: "ORG-0056",
+		organizationName: "Westside Academy",
+		organizationInitials: "WA",
+		organizationColor: "bg-emerald-500",
+		lastLogin: "30 days ago",
+		addedAt: "Nov 10, 2024",
+	},
+	{
+		id: "OA-004",
+		name: "David Kim",
+		email: "admin@globalinst.com",
+		initials: "DK",
+		color: "bg-amber-500",
+		role: "owner",
+		status: "active",
+		organizationId: "ORG-8902",
+		organizationName: "Global Institute",
+		organizationInitials: "GI",
+		organizationColor: "bg-amber-500",
+		lastLogin: "1 hour ago",
+		addedAt: "Jun 20, 2024",
+	},
+	{
+		id: "OA-005",
+		name: "Emily Chen",
+		email: "e.chen@lincoln.edu",
+		initials: "EC",
+		color: "bg-pink-500",
+		role: "admin",
+		status: "active",
+		organizationId: "ORG-1002",
+		organizationName: "Lincoln High School",
+		organizationInitials: "LH",
+		organizationColor: "bg-indigo-500",
+		lastLogin: "12 hours ago",
+		addedAt: "Sep 01, 2025",
+	},
+	{
+		id: "OA-006",
+		name: "Robert Garcia",
+		email: "r.garcia@state.edu",
+		initials: "RG",
+		color: "bg-cyan-500",
+		role: "manager",
+		status: "active",
+		organizationId: "ORG-3341",
+		organizationName: "State University",
+		organizationInitials: "SU",
+		organizationColor: "bg-blue-500",
+		lastLogin: "3 days ago",
+		addedAt: "Jul 14, 2025",
+	},
+	{
+		id: "OA-007",
+		name: "Lisa Wang",
+		email: "l.wang@globalinst.com",
+		initials: "LW",
+		color: "bg-red-500",
+		role: "admin",
+		status: "pending",
+		organizationId: "ORG-8902",
+		organizationName: "Global Institute",
+		organizationInitials: "GI",
+		organizationColor: "bg-amber-500",
+		lastLogin: "Never",
+		addedAt: "Feb 08, 2026",
+	},
+	{
+		id: "OA-008",
+		name: "James Wilson",
+		email: "j.wilson@state.edu",
+		initials: "JW",
+		color: "bg-indigo-500",
+		role: "manager",
+		status: "active",
+		organizationId: "ORG-3341",
+		organizationName: "State University",
+		organizationInitials: "SU",
+		organizationColor: "bg-blue-500",
+		lastLogin: "1 day ago",
+		addedAt: "Oct 22, 2025",
+	},
+];

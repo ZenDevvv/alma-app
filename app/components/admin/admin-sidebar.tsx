@@ -34,33 +34,33 @@ interface AdminSidebarProps {
 }
 
 const mainNavItems = [
-	{ href: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true },
+	{ href: "/superadmin", icon: LayoutDashboard, label: "Dashboard", end: true },
 	{
-		href: "/admin/organizations",
+		href: "/superadmin/organizations",
 		icon: Building2,
 		label: "Organizations",
 		end: false,
 	},
 	{
-		href: "/admin/org-admins",
+		href: "/superadmin/org-admins",
 		icon: ShieldCheck,
 		label: "Organization Admins",
 		end: false,
 	},
 	{
-		href: "/admin/user-management",
+		href: "/superadmin/user-management",
 		icon: UsersRound,
 		label: "User Management",
 		end: false,
 	},
 	{
-		href: "/admin/announcements",
+		href: "/superadmin/announcements",
 		icon: Megaphone,
 		label: "Announcements",
 		end: false,
 	},
 	{
-		href: "/admin/platform-analytics",
+		href: "/superadmin/platform-analytics",
 		icon: BarChart3,
 		label: "Platform Analytics",
 		end: false,
@@ -69,13 +69,13 @@ const mainNavItems = [
 
 const logsNavItems = [
 	{
-		href: "/admin/activity-logs",
+		href: "/superadmin/activity-logs",
 		icon: Activity,
 		label: "Activity Logs",
 		end: false,
 	},
 	{
-		href: "/admin/audit-logs",
+		href: "/superadmin/audit-logs",
 		icon: ScrollText,
 		label: "Audit Logs",
 		end: false,
@@ -84,25 +84,25 @@ const logsNavItems = [
 
 const systemNavItems = [
 	{
-		href: "/admin/feature-flags",
+		href: "/superadmin/feature-flags",
 		icon: ToggleRight,
 		label: "Feature Flags",
 		end: false,
 	},
 	{
-		href: "/admin/email-templates",
+		href: "/superadmin/email-templates",
 		icon: Mail,
 		label: "Email Templates",
 		end: false,
 	},
 	{
-		href: "/admin/maintenance",
+		href: "/superadmin/maintenance",
 		icon: Wrench,
 		label: "Maintenance",
 		end: false,
 	},
 	{
-		href: "/admin/settings",
+		href: "/superadmin/settings",
 		icon: Settings,
 		label: "Settings",
 		end: false,

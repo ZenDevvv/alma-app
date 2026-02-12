@@ -3,15 +3,15 @@ import AuthContext, { type AuthContextType } from "./auth-context";
 import authService from "~/services/auth-service";
 import userService from "~/services/user-service";
 import { queryClient } from "~/lib/query-client";
-import type { UserWithRelation } from "~/zod/user.zod";
 import { useNavigate } from "react-router";
+import type { User } from "~/zod/user.zod";
 
 interface AuthProviderProps {
 	children: ReactNode;
 }
 
 const AuthProvider = ({ children }: AuthProviderProps) => {
-	const [user, setUser] = useState<UserWithRelation | null>(null);
+	const [user, setUser] = useState<User | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const navigate = useNavigate();
@@ -26,7 +26,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
 			setError(null);
 			const response = await userService.getCurrentUser();
 
-			setUser(response.user as UserWithRelation);
+			setUser(response.user as User);
 		} catch (error: any) {
 			console.error("Error fetching current user:", error);
 			setUser(null);

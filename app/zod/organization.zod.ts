@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { UserWithRelationSchema } from "./user.zod";
+import { UserSchema } from "./user.zod";
 import type { Pagination } from "~/types/pagination";
 
 export const OrganizationSchema = z.object({
@@ -14,7 +14,7 @@ export const OrganizationSchema = z.object({
 	updatedAt: z.coerce.date(),
 });
 export const OrganizationWithRelationSchema = OrganizationSchema.extend({
-	users: z.array(UserWithRelationSchema).optional(),
+	users: z.array(UserSchema).optional(),
 });
 
 export const GetAllOrganizationsSchema = z.object({

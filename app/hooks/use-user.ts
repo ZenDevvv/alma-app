@@ -52,6 +52,7 @@ export const useCreateUser = () => {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["users"] });
+			queryClient.invalidateQueries({ queryKey: ["organization-by-id"] });
 		},
 	});
 };

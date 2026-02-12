@@ -1,6 +1,6 @@
-import type { UserWithRelation } from "~/zod/user.zod";
+import type { User } from "~/zod/user.zod";
 
 export type loginResponse = {
-	user: UserWithRelation;
+	user: User;
 	token: string;
 };

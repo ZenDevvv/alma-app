@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { PersonSchema } from "./person.zod";
+import { OrganizationSchema } from "./organization.zod";
 
 // ─── Enums matching Prisma ───────────────────────────────────────────
 
@@ -33,31 +34,45 @@ export const UserSchema = z.object({
 	loginMethod: z.string().optional(),
 	createdAt: z.coerce.date(),
 	updatedAt: z.coerce.date(),
+
+	// --- Foreign key IDs ---
 	personId: z.string().optional(),
 	orgId: z.string().optional(),
+	// --- Relation fields (from Prisma model) ---
+	person: PersonSchema.optional(),
+	organization: OrganizationSchema.optional(),
 });
 
-export const UserWithRelationSchema = UserSchema.extend({
-	person: PersonSchema.optional(),
+export type User = z.infer<typeof UserSchema>;
+
+// ─── Pagination Schema ──────────────────────────────────────────────
+
+export const PaginationSchema = z.object({
+	total: z.number(),
+	page: z.number(),
+	limit: z.number(),
+	totalPages: z.number(),
+	hasNext: z.boolean(),
+	hasPrev: z.boolean(),
 });
+
+// ─── GetAll Schema ──────────────────────────────────────────────────
 
 export const GetAllUsersSchema = z.object({
-	users: z.array(UserWithRelationSchema),
-	pagination: z
-		.object({
-			page: z.number(),
-			limit: z.number(),
-			total: z.number(),
-			totalPages: z.number(),
-		})
-		.optional(),
+	users: z.array(UserSchema),
+	pagination: PaginationSchema.optional(),
 	count: z.number().optional(),
 });
+
+export type GetAllUsers = z.infer<typeof GetAllUsersSchema>;
 
 export const CreateUserSchema = UserSchema.omit({
 	id: true,
 	createdAt: true,
 	updatedAt: true,
+	// Omit relation fields — use foreign key IDs instead
+	person: true,
+	organization: true,
 }).partial({
 	avatar: true,
 	isDeleted: true,
@@ -66,15 +81,16 @@ export const CreateUserSchema = UserSchema.omit({
 	orgId: true,
 });
 
+export type CreateUser = z.infer<typeof CreateUserSchema>;
+
 export const UpdateUserSchema = UserSchema.omit({
 	id: true,
 	createdAt: true,
 	updatedAt: true,
 	isDeleted: true,
+	// Omit relation fields — use foreign key IDs instead
+	person: true,
+	organization: true,
 }).partial();
 
-export type User = z.infer<typeof UserSchema>;
-export type UserWithRelation = z.infer<typeof UserWithRelationSchema>;
-export type GetAllUsers = z.infer<typeof GetAllUsersSchema>;
-export type CreateUser = z.infer<typeof CreateUserSchema>;
 export type UpdateUser = z.infer<typeof UpdateUserSchema>;

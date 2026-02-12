@@ -22,8 +22,12 @@ export function LoginForm() {
 		e.preventDefault();
 		setIsLoading(true);
 		try {
-			const user = await login(identifier, password);
-			navigate("/superadmin");
+			const response = await login(identifier, password);
+			if (response.user.subRole.includes("superadmin")) {
+				navigate("/superadmin");
+			} else if (response.user.subRole.includes("org_admin")) {
+				navigate("/admin");
+			}
 		} catch (err) {
 			console.error("Login failed:", err);
 		} finally {
@@ -35,7 +39,9 @@ export function LoginForm() {
 		<div className="w-full max-w-[400px] space-y-8">
 			<div className="space-y-2">
 				<h2 className="text-2xl font-bold tracking-tight text-foreground">Welcome back</h2>
-				<p className="text-sm text-muted-foreground">Please enter your details to sign in.</p>
+				<p className="text-sm text-muted-foreground">
+					Please enter your details to sign in.
+				</p>
 			</div>
 
 			<form onSubmit={handleLogin} className="space-y-5">
@@ -150,7 +156,11 @@ export function LoginForm() {
 			</div>
 
 			{/* SSO */}
-			<Button type="button" variant="outline" className="w-full h-11 gap-2" disabled={isLoading}>
+			<Button
+				type="button"
+				variant="outline"
+				className="w-full h-11 gap-2"
+				disabled={isLoading}>
 				<span className="text-lg leading-none text-primary">
 					<Icon name="passkey" className="text-lg" />
 				</span>

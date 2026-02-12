@@ -27,7 +27,7 @@ type UserRow = {
 	name: string;
 	email: string;
 	role: string;
-	subRole: string;
+	subRole: string[];
 	status: "active" | "inactive" | "suspended" | "archived";
 };
 
@@ -113,7 +113,7 @@ export default function OrganizationDetailPage() {
 			label: "Sub Role",
 			render: (_, user) => (
 				<span className="text-sm text-muted-foreground capitalize">
-					{user.subRole.replace("_", " ")}
+					{user.subRole.map((r) => r.replace("_", " ")).join(", ")}
 				</span>
 			),
 		},

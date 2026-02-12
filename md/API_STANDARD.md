@@ -1,6 +1,6 @@
 # API Call Standard
 
-This document outlines the standard pattern for creating API calls in the EPP application. Follow these steps when creating a new API endpoint integration.
+This document outlines the standard pattern for creating API calls in the frontend application (`{projectName}-app`). Follow these steps when creating a new API endpoint integration.
 
 ---
 
@@ -248,23 +248,27 @@ export const useDelete{Resource} = () => {
 
 ## Step 4: Copy Zod Schema File from API
 
-**Source:** `alma-api/zod/{resource}.zod.ts`
+**Source:** `{projectName}-api/zod/{resource}.zod.ts`
 **Destination:** `app/zod/{resource}.zod.ts`
 
-Copy the Zod schema file directly from the backend API project (`alma-api/zod/`) to the frontend app (`app/zod/`). The API project's `MODULE_TEMPLATE_GUIDE.md` defines the authoritative Zod schemas — the frontend must use the same file to stay aligned.
+Copy the Zod schema file directly from the backend API project (`{projectName}-api/zod/`) to the frontend app (`app/zod/`). The API project's `MODULE_TEMPLATE_GUIDE.md` defines the authoritative Zod schemas — the frontend must use the same file to stay aligned.
 
 ### Steps
 
-1. Locate the Zod file in `alma-api/zod/{resource}.zod.ts`
+1. Locate the Zod file in `{projectName}-api/zod/{resource}.zod.ts`
 2. Copy it to `app/zod/{resource}.zod.ts`
-3. Adjust imports if needed (e.g., `mongoose` → remove `isValidObjectId` usage if not available in the frontend, replace with a simple string regex check)
+3. **Replace `mongoose` ObjectId validation with `ObjectIdSchema`:**
+   - Remove the `import { isValidObjectId } from "mongoose"` import
+   - Add `import { ObjectIdSchema } from "./object-id.zod"` instead
+   - Replace all `z.string().refine((val) => isValidObjectId(val))` with `ObjectIdSchema`
+   - The `ObjectIdSchema` (defined in `app/zod/object-id.zod.ts`) uses a regex check: `z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ObjectId format")`
 
 ### Key Points
 
 - **Do NOT create a new Zod schema from scratch** — always copy from the API project
 - The API Zod file is the **single source of truth** for all schemas (`{Resource}Schema`, `Create{Resource}Schema`, `Update{Resource}Schema`, `GetAll{Entities}Schema`)
-- If the API Zod file does not exist yet, create it in the API project first following `alma-api/md/MODULE_TEMPLATE_GUIDE.md` Step 2, then copy it over
-- **If the copied Zod file imports other schemas (e.g., `import { PersonSchema } from "./person.zod"`) that do not yet exist in `app/zod/`, copy those dependency Zod files from `alma-api/zod/` as well.** Recursively apply this rule until all imports resolve.
+- If the API Zod file does not exist yet, create it in the API project first following `{projectName}-api/md/MODULE_TEMPLATE_GUIDE.md` Step 2, then copy it over
+- **If the copied Zod file imports other schemas (e.g., `import { PersonSchema } from "./person.zod"`) that do not yet exist in `app/zod/`, copy those dependency Zod files from `{projectName}-api/zod/` as well.** Recursively apply this rule until all imports resolve.
 - After copying, verify that all imports resolve correctly in the frontend context
 
 ---
@@ -446,13 +450,14 @@ When adding a new resource API, create/modify the following files:
 | 1    | Endpoints      | `app/configs/endpoints.ts`           |
 | 2    | Service        | `app/services/{resource}-service.ts` |
 | 3    | Hooks          | `app/hooks/use-{resource}.ts`        |
-| 4    | Zod Schema (copy from API) | `alma-api/zod/{resource}.zod.ts` → `app/zod/{resource}.zod.ts` |
+| 4    | Zod Schema (copy from API) | `{projectName}-api/zod/{resource}.zod.ts` → `app/zod/{resource}.zod.ts` |
 | 5    | Page Integration | Check Zod + Service before using hooks in pages |
 
 ---
 
 ## Notes
 
+- Replace `{projectName}` with your project name (e.g., `alma`, `epp`, `myapp`) — the backend is `{projectName}-api` and the frontend is `{projectName}-app`
 - Replace `{Resource}` with your resource name in **PascalCase** (e.g., `Order`, `Product`, `User`)
 - Replace `{resource}` with your resource name in **camelCase** (e.g., `order`, `product`, `user`)
 - Replace `RESOURCE` with your resource name in **UPPERCASE** (e.g., `ORDER`, `PRODUCT`, `USER`)

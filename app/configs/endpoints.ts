@@ -34,4 +34,12 @@ export const API_ENDPOINTS = {
 		UPDATE: "/organization/:id",
 		DELETE: "/organization/:id", // Soft delete
 	},
+
+	COURSE: {
+		GET_ALL: "/course",
+		GET_BY_ID: "/course/:id",
+		CREATE: "/course",
+		UPDATE: "/course/:id",
+		DELETE: "/course/:id", // Soft delete
+	},
 };

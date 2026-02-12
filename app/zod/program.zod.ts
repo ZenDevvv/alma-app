@@ -1,0 +1,80 @@
+import { z } from "zod";
+import { OrganizationSchema } from "./organization.zod";
+import { FacultySchema } from "./faculty.zod";
+import { ObjectIdSchema } from "./object-id.zod";
+
+export const ProgramStatus = z.enum(["active", "archived"]);
+
+export const ProgramSchema = z.object({
+	id: ObjectIdSchema,
+	name: z.string().min(1),
+	code: z.string().min(1),
+	description: z.string().optional(),
+	status: ProgramStatus.default("active"),
+	totalUnits: z.number().int().optional(),
+	requirements: z.unknown().optional(),
+	// Foreign key IDs
+	orgId: ObjectIdSchema,
+	facultyId: ObjectIdSchema.optional(),
+
+	isDeleted: z.boolean(),
+	createdBy: ObjectIdSchema.optional(),
+	updatedBy: ObjectIdSchema.optional(),
+	createdAt: z.coerce.date(),
+	updatedAt: z.coerce.date(),
+
+	// Relation fields (only where this model owns the foreign key)
+	organization: OrganizationSchema.optional(),
+	faculty: FacultySchema.optional(),
+});
+
+export type Program = z.infer<typeof ProgramSchema>;
+
+export const PaginationSchema = z.object({
+	total: z.number(),
+	page: z.number(),
+	limit: z.number(),
+	totalPages: z.number(),
+	hasNext: z.boolean(),
+	hasPrev: z.boolean(),
+});
+
+export const GetAllProgramsSchema = z.object({
+	programs: z.array(ProgramSchema),
+	pagination: PaginationSchema.optional(),
+	count: z.number().optional(),
+});
+
+export type GetAllPrograms = z.infer<typeof GetAllProgramsSchema>;
+
+export const CreateProgramSchema = ProgramSchema.omit({
+	id: true,
+	createdAt: true,
+	updatedAt: true,
+	organization: true,
+	faculty: true,
+}).partial({
+	description: true,
+	status: true,
+	totalUnits: true,
+	requirements: true,
+	facultyId: true,
+	isDeleted: true,
+	createdBy: true,
+	updatedBy: true,
+});
+
+export type CreateProgram = z.infer<typeof CreateProgramSchema>;
+
+export const UpdateProgramSchema = ProgramSchema.omit({
+	id: true,
+	orgId: true,
+	createdAt: true,
+	updatedAt: true,
+	isDeleted: true,
+	createdBy: true,
+	organization: true,
+	faculty: true,
+}).partial();
+
+export type UpdateProgram = z.infer<typeof UpdateProgramSchema>;

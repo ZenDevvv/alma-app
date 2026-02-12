@@ -11,39 +11,23 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
-import {
-	Search,
-	Download,
-	Plus,
-	ChevronLeft,
-	ChevronRight,
-} from "lucide-react";
+import { Search, Download, Plus } from "lucide-react";
+import { DataTable, type DataTableColumn } from "~/components/molecule/data-table-updated";
+import { TablePagination } from "~/components/molecule/table-pagination";
 import {
 	MOCK_COURSES,
 	MOCK_COURSE_CATEGORIES,
-	MOCK_COURSES_TOTAL,
 	type MockCourse,
 	type CourseStatus,
-	type CourseLevel,
 } from "~/data/mock-org-admin-data";
 
 const PAGE_SIZE = 5;
 
 const statusBadge: Record<CourseStatus, string> = {
-	Active:
-		"border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400",
+	Active: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400",
 	Archived:
 		"border-gray-200 bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400",
-	Draft:
-		"border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-400",
+	Draft: "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-400",
 };
 
 export default function OrgAdminCourses() {
@@ -61,25 +45,19 @@ export default function OrgAdminCourses() {
 				course.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
 				course.description.toLowerCase().includes(searchQuery.toLowerCase());
 
-			const matchesLevel =
-				levelFilter === "all" || course.level === levelFilter;
-			const matchesCategory =
-				categoryFilter === "all" || course.category === categoryFilter;
-			const matchesStatus =
-				statusFilter === "all" || course.status === statusFilter;
+			const matchesLevel = levelFilter === "all" || course.level === levelFilter;
+			const matchesCategory = categoryFilter === "all" || course.category === categoryFilter;
+			const matchesStatus = statusFilter === "all" || course.status === statusFilter;
 
 			return matchesSearch && matchesLevel && matchesCategory && matchesStatus;
 		});
 	}, [searchQuery, levelFilter, categoryFilter, statusFilter]);
 
 	const totalResults = filteredCourses.length;
-	const totalPages = Math.ceil(totalResults / PAGE_SIZE);
 	const paginatedCourses = filteredCourses.slice(
 		(currentPage - 1) * PAGE_SIZE,
 		currentPage * PAGE_SIZE,
 	);
-	const startIndex = (currentPage - 1) * PAGE_SIZE + 1;
-	const endIndex = Math.min(currentPage * PAGE_SIZE, totalResults);
 
 	const hasActiveFilters =
 		searchQuery || levelFilter !== "all" || categoryFilter !== "all" || statusFilter !== "all";
@@ -92,21 +70,87 @@ export default function OrgAdminCourses() {
 		setCurrentPage(1);
 	};
 
-	const getPageNumbers = () => {
-		const pages: (number | "ellipsis")[] = [];
-		if (totalPages <= 7) {
-			for (let i = 1; i <= totalPages; i++) pages.push(i);
-		} else {
-			pages.push(1, 2, 3);
-			if (currentPage > 4) pages.push("ellipsis");
-			if (currentPage > 3 && currentPage < totalPages - 2) {
-				pages.push(currentPage);
-			}
-			if (currentPage < totalPages - 3) pages.push("ellipsis");
-			pages.push(totalPages - 1, totalPages);
-		}
-		return [...new Set(pages)];
-	};
+	const courseColumns = useMemo<DataTableColumn<MockCourse>[]>(
+		() => [
+			{
+				key: "code",
+				label: "Code",
+				className: "pl-6 w-24",
+				cellClassName: "pl-6 py-4",
+				render: (_, course) => (
+					<span className="text-sm text-muted-foreground">{course.code}</span>
+				),
+			},
+			{
+				key: "name",
+				label: "Course Name",
+				cellClassName: "py-4",
+				render: (_, course) => (
+					<div>
+						<p className="text-sm font-medium text-primary hover:underline cursor-pointer">
+							{course.name}
+						</p>
+						<p className="text-xs text-muted-foreground mt-0.5">{course.description}</p>
+					</div>
+				),
+			},
+			{
+				key: "category",
+				label: "Category",
+				cellClassName: "py-4",
+				render: (_, course) => (
+					<span className="text-sm text-foreground">{course.category}</span>
+				),
+			},
+			{
+				key: "level",
+				label: "Level",
+				cellClassName: "py-4",
+				render: (_, course) => (
+					<span className="text-sm text-foreground">{course.level}</span>
+				),
+			},
+			{
+				key: "hasPrereqs",
+				label: "Prereqs",
+				className: "text-center",
+				cellClassName: "py-4 text-center",
+				render: (_, course) => (
+					<div className="flex flex-col items-center gap-1">
+						<Switch checked={course.hasPrereqs} className="pointer-events-none" />
+						{course.hasPrereqs && course.prereqLabel && (
+							<span className="text-[10px] font-semibold text-primary">
+								{course.prereqLabel}
+							</span>
+						)}
+					</div>
+				),
+			},
+			{
+				key: "lastUpdated",
+				label: "Last Updated",
+				cellClassName: "py-4",
+				render: (_, course) => (
+					<div>
+						<p className="text-sm text-foreground">{course.lastUpdated}</p>
+						<p className="text-xs text-muted-foreground">by {course.updatedBy}</p>
+					</div>
+				),
+			},
+			{
+				key: "status",
+				label: "Status",
+				className: "text-center",
+				cellClassName: "py-4 text-center",
+				render: (_, course) => (
+					<Badge className={`text-[11px] ${statusBadge[course.status]}`}>
+						{course.status}
+					</Badge>
+				),
+			},
+		],
+		[],
+	);
 
 	return (
 		<div className="space-y-6">
@@ -213,146 +257,27 @@ export default function OrgAdminCourses() {
 			{/* Table */}
 			<Card className="border-border/50">
 				<CardContent className="p-0">
-					<Table>
-						<TableHeader>
-							<TableRow className="hover:bg-transparent">
-								<TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground pl-6 w-24">
-									Code
-								</TableHead>
-								<TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-									Course Name
-								</TableHead>
-								<TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-									Category
-								</TableHead>
-								<TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-									Level
-								</TableHead>
-								<TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-center">
-									Prereqs
-								</TableHead>
-								<TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-									Last Updated
-								</TableHead>
-								<TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-center">
-									Status
-								</TableHead>
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{paginatedCourses.length === 0 ? (
-								<TableRow>
-									<TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-										No courses found matching your filters.
-									</TableCell>
-								</TableRow>
-							) : (
-								paginatedCourses.map((course) => (
-									<TableRow
-										key={course.id}
-										className="hover:bg-muted/30 cursor-pointer">
-										<TableCell className="pl-6 py-4">
-											<span className="text-sm text-muted-foreground">
-												{course.code}
-											</span>
-										</TableCell>
-										<TableCell className="py-4">
-											<div>
-												<p className="text-sm font-medium text-primary hover:underline cursor-pointer">
-													{course.name}
-												</p>
-												<p className="text-xs text-muted-foreground mt-0.5">
-													{course.description}
-												</p>
-											</div>
-										</TableCell>
-										<TableCell className="py-4">
-											<span className="text-sm text-foreground">
-												{course.category}
-											</span>
-										</TableCell>
-										<TableCell className="py-4">
-											<span className="text-sm text-foreground">
-												{course.level}
-											</span>
-										</TableCell>
-										<TableCell className="py-4 text-center">
-											<div className="flex flex-col items-center gap-1">
-												<Switch
-													checked={course.hasPrereqs}
-													className="pointer-events-none"
-												/>
-												{course.hasPrereqs && course.prereqLabel && (
-													<span className="text-[10px] font-semibold text-primary">
-														{course.prereqLabel}
-													</span>
-												)}
-											</div>
-										</TableCell>
-										<TableCell className="py-4">
-											<div>
-												<p className="text-sm text-foreground">
-													{course.lastUpdated}
-												</p>
-												<p className="text-xs text-muted-foreground">
-													by {course.updatedBy}
-												</p>
-											</div>
-										</TableCell>
-										<TableCell className="py-4 text-center">
-											<Badge className={`text-[11px] ${statusBadge[course.status]}`}>
-												{course.status}
-											</Badge>
-										</TableCell>
-									</TableRow>
-								))
-							)}
-						</TableBody>
-					</Table>
+					<DataTable
+						columns={courseColumns}
+						data={paginatedCourses}
+						variant="organizations"
+						className="rounded-none"
+					/>
 
 					{/* Pagination */}
 					{totalResults > 0 && (
-						<div className="flex items-center justify-between border-t border-border/50 px-6 py-4">
-							<p className="text-sm text-muted-foreground">
-								Showing {startIndex} to {endIndex} of {totalResults} results
-							</p>
-							<div className="flex items-center gap-1">
-								<Button
-									variant="outline"
-									size="icon"
-									className="size-8"
-									disabled={currentPage === 1}
-									onClick={() => setCurrentPage((p) => p - 1)}>
-									<ChevronLeft className="size-4" />
-								</Button>
-								{getPageNumbers().map((page, idx) =>
-									page === "ellipsis" ? (
-										<span
-											key={`ellipsis-${idx}`}
-											className="px-2 text-sm text-muted-foreground">
-											...
-										</span>
-									) : (
-										<Button
-											key={page}
-											variant={currentPage === page ? "default" : "outline"}
-											size="icon"
-											className="size-8 text-xs"
-											onClick={() => setCurrentPage(page)}>
-											{page}
-										</Button>
-									),
-								)}
-								<Button
-									variant="outline"
-									size="icon"
-									className="size-8"
-									disabled={currentPage === totalPages}
-									onClick={() => setCurrentPage((p) => p + 1)}>
-									<ChevronRight className="size-4" />
-								</Button>
-							</div>
-						</div>
+						<TablePagination
+							currentPage={currentPage}
+							onPageChange={setCurrentPage}
+							totalItems={totalResults}
+							pageSize={PAGE_SIZE}
+							currentPageItemCount={paginatedCourses.length}
+							buttonVariant="outline"
+							activeButtonVariant="default"
+							summaryClassName="text-sm"
+							navButtonClassName="size-8"
+							pageButtonClassName="size-8 text-xs"
+						/>
 					)}
 				</CardContent>
 			</Card>

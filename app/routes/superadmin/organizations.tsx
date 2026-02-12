@@ -14,9 +14,8 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { DataTable, type DataTableColumn } from "~/components/molecule/data-table-updated";
-import {
-	useGetOrganizations,
-} from "~/hooks/use-organization";
+import { TablePagination } from "~/components/molecule/table-pagination";
+import { useGetOrganizations } from "~/hooks/use-organization";
 import { formatDate, getInitials, getOrgColor } from "~/utils/organization-utils";
 
 const PAGE_LIMIT = 10;
@@ -75,13 +74,10 @@ export default function OrganizationsPage() {
 			? organizationRows
 			: organizationRows.filter((org) => org.status === statusFilter);
 
-	const totalResults =
-		data?.count ?? data?.pagination?.total ?? organizationRows.length;
+	const totalResults = data?.count ?? data?.pagination?.total ?? organizationRows.length;
 	const totalPages = data?.pagination?.totalPages ?? 1;
 	const activeOrgs = organizationRows.filter((org) => org.status === "active").length;
 	const inactiveOrgs = organizationRows.filter((org) => org.status === "inactive").length;
-	const showingFrom = filteredOrgs.length === 0 ? 0 : (currentPage - 1) * PAGE_LIMIT + 1;
-	const showingTo = filteredOrgs.length === 0 ? 0 : showingFrom + filteredOrgs.length - 1;
 
 	const statCards = [
 		{
@@ -114,8 +110,7 @@ export default function OrganizationsPage() {
 				<div className="flex items-center gap-3">
 					<Avatar className="size-10">
 						<AvatarImage src={org.logo || undefined} alt={org.name} />
-						<AvatarFallback
-							className={`${org.color} text-white text-xs font-semibold`}>
+						<AvatarFallback className={`${org.color} text-white text-xs font-semibold`}>
 							{org.initials}
 						</AvatarFallback>
 					</Avatar>
@@ -129,9 +124,7 @@ export default function OrganizationsPage() {
 		{
 			key: "code",
 			label: "Code",
-			render: (_, org) => (
-				<p className="text-sm font-medium text-foreground">{org.code}</p>
-			),
+			render: (_, org) => <p className="text-sm font-medium text-foreground">{org.code}</p>,
 		},
 		{
 			key: "usersCount",
@@ -243,9 +236,7 @@ export default function OrganizationsPage() {
 						/>
 					</div>
 					<div className="flex items-center gap-2">
-						<Select
-							value={statusFilter}
-							onValueChange={setStatusFilter}>
+						<Select value={statusFilter} onValueChange={setStatusFilter}>
 							<SelectTrigger className="w-[140px]">
 								<SelectValue placeholder="Status: All" />
 							</SelectTrigger>
@@ -305,83 +296,25 @@ export default function OrganizationsPage() {
 						onRowClick={(row) => navigate(`/superadmin/organizations/${row.id}`)}
 					/>
 
-					{/* Pagination */}
-					<div className="flex items-center justify-between border-t border-border/50 px-6 py-4">
-						<p className="text-xs text-muted-foreground">
-							{isLoading ? (
-								"Loading organizations..."
-							) : (
-								<>
-									Showing{" "}
-									<span className="font-medium text-foreground">
-										{showingFrom}
-									</span>{" "}
-									to{" "}
-									<span className="font-medium text-foreground">
-										{showingTo}
-									</span>{" "}
-									of{" "}
-									<span className="font-medium text-foreground">
-										{totalResults}
-									</span>{" "}
-									results
-								</>
-							)}
-							{isFetching && !isLoading ? " (Updating...)" : ""}
-						</p>
-						<div className="flex items-center gap-1">
-							<Button
-								variant="ghost"
-								size="icon"
-								className="size-8 text-muted-foreground"
-								disabled={currentPage === 1}
-								onClick={() =>
-									setCurrentPage((p) => Math.max(1, p - 1))
-								}>
-								<Icon name="chevron_left" size={20} />
-							</Button>
-							{[1, 2, 3]
-								.filter((page) => page <= totalPages)
-								.map((page) => (
-									<Button
-										key={page}
-										variant={
-											currentPage === page ? "default" : "ghost"
-										}
-										size="icon"
-										className={`size-8 text-xs ${currentPage === page ? "" : "text-muted-foreground"}`}
-										onClick={() => setCurrentPage(page)}>
-										{page}
-									</Button>
-								))}
-							{totalPages > 3 && (
-								<>
-									<span className="px-1 text-xs text-muted-foreground">
-										...
-									</span>
-									<Button
-										variant="ghost"
-										size="icon"
-										className="size-8 text-xs text-muted-foreground"
-										onClick={() => setCurrentPage(totalPages)}>
-										{totalPages}
-									</Button>
-								</>
-							)}
-							<Button
-								variant="ghost"
-								size="icon"
-								className="size-8 text-muted-foreground"
-								disabled={currentPage === totalPages}
-								onClick={() =>
-									setCurrentPage((p) =>
-										Math.min(totalPages, p + 1),
-									)
-								}>
-								<Icon name="chevron_right" size={20} />
-							</Button>
-						</div>
-					</div>
+					<TablePagination
+						currentPage={currentPage}
+						onPageChange={setCurrentPage}
+						totalItems={totalResults}
+						totalPages={totalPages}
+						pageSize={PAGE_LIMIT}
+						currentPageItemCount={filteredOrgs.length}
+						isLoading={isLoading}
+						isUpdating={isFetching}
+						loadingText="Loading organizations..."
+						displayMode="simple"
+						buttonVariant="ghost"
+						activeButtonVariant="default"
+						summaryClassName="text-xs"
+						navButtonClassName="size-8 text-muted-foreground"
+						pageButtonClassName="size-8 text-xs"
+						inactivePageButtonClassName="text-muted-foreground"
+						iconSize={20}
+					/>
 				</CardContent>
 			</Card>
 		</div>

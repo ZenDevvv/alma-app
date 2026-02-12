@@ -246,65 +246,26 @@ export const useDelete{Resource} = () => {
 
 ---
 
-## Step 4: Create Zod Schema File
+## Step 4: Copy Zod Schema File from API
 
-**File Location:** `app/zod/{resource}.zod.ts`
+**Source:** `alma-api/zod/{resource}.zod.ts`
+**Destination:** `app/zod/{resource}.zod.ts`
 
-Create a Zod schema file to define and validate types for the resource.
+Copy the Zod schema file directly from the backend API project (`alma-api/zod/`) to the frontend app (`app/zod/`). The API project's `MODULE_TEMPLATE_GUIDE.md` defines the authoritative Zod schemas — the frontend must use the same file to stay aligned.
 
-### Template: {resource}.zod.ts
+### Steps
 
-```typescript
-import { z } from "zod";
+1. Locate the Zod file in `alma-api/zod/{resource}.zod.ts`
+2. Copy it to `app/zod/{resource}.zod.ts`
+3. Adjust imports if needed (e.g., `mongoose` → remove `isValidObjectId` usage if not available in the frontend, replace with a simple string regex check)
 
-// Base schema for the resource
-export const {Resource}Schema = z.object({
-    // TODO: Define your schema fields here
-    // Example:
-    // id: z.string(),
-    // name: z.string(),
-    // createdAt: z.string().datetime(),
-    // updatedAt: z.string().datetime(),
-});
+### Key Points
 
-// Schema with relations
-export const {Resource}WithRelationSchema = {Resource}Schema.extend({
-    // TODO: Add relation fields here
-    // Example:
-    // user: UserSchema.optional(),
-    // items: z.array(ItemSchema).optional(),
-});
-
-// Schema for GET ALL response
-export const GetAll{Resource}sSchema = z.object({
-    data: z.array({Resource}WithRelationSchema),
-    pagination: z.object({
-        page: z.number(),
-        limit: z.number(),
-        total: z.number(),
-        totalPages: z.number(),
-    }).optional(),
-});
-
-// Schema for CREATE request
-export const Create{Resource}Schema = {Resource}Schema.omit({
-    // TODO: Omit auto-generated fields
-    // Example:
-    // id: true,
-    // createdAt: true,
-    // updatedAt: true,
-});
-
-// Schema for UPDATE request
-export const Update{Resource}Schema = Create{Resource}Schema.partial();
-
-// Type exports
-export type {Resource} = z.infer<typeof {Resource}Schema>;
-export type {Resource}WithRelation = z.infer<typeof {Resource}WithRelationSchema>;
-export type GetAll{Resource}s = z.infer<typeof GetAll{Resource}sSchema>;
-export type Create{Resource} = z.infer<typeof Create{Resource}Schema>;
-export type Update{Resource} = z.infer<typeof Update{Resource}Schema>;
-```
+- **Do NOT create a new Zod schema from scratch** — always copy from the API project
+- The API Zod file is the **single source of truth** for all schemas (`{Resource}Schema`, `Create{Resource}Schema`, `Update{Resource}Schema`, `GetAll{Entities}Schema`)
+- If the API Zod file does not exist yet, create it in the API project first following `alma-api/md/MODULE_TEMPLATE_GUIDE.md` Step 2, then copy it over
+- **If the copied Zod file imports other schemas (e.g., `import { PersonSchema } from "./person.zod"`) that do not yet exist in `app/zod/`, copy those dependency Zod files from `alma-api/zod/` as well.** Recursively apply this rule until all imports resolve.
+- After copying, verify that all imports resolve correctly in the frontend context
 
 ---
 
@@ -485,7 +446,7 @@ When adding a new resource API, create/modify the following files:
 | 1    | Endpoints      | `app/configs/endpoints.ts`           |
 | 2    | Service        | `app/services/{resource}-service.ts` |
 | 3    | Hooks          | `app/hooks/use-{resource}.ts`        |
-| 4    | Zod Schema     | `app/zod/{resource}.zod.ts`          |
+| 4    | Zod Schema (copy from API) | `alma-api/zod/{resource}.zod.ts` → `app/zod/{resource}.zod.ts` |
 | 5    | Page Integration | Check Zod + Service before using hooks in pages |
 
 ---

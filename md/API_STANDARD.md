@@ -290,6 +290,28 @@ Before using any hook, check these files for the resource:
 
 When using `useGet{Resource}s` or `useGet{Resource}ById`, the **response data type** comes from the Zod schema file.
 
+#### Passing the `fields` Parameter
+
+**Always pass the `fields` parameter** as a comma-separated string containing all the fields you need from the resource. Build this string by combining:
+
+1. **All scalar fields** from `{Resource}Schema` in the Zod file (e.g., `id`, `name`, `code`, `description`, `createdAt`, `updatedAt`, `isDeleted`, etc.)
+2. **Relation field names** from `{Resource}WithRelationSchema` (e.g., `users`, `orders`, `products`) — include only the relation field **name**, not its nested fields
+
+To determine the correct fields string:
+1. Open `app/zod/{resource}.zod.ts`
+2. List every key in `{Resource}Schema` — these are the scalar fields
+3. List every key added in `{Resource}WithRelationSchema.extend({...})` — these are the relation fields
+4. Join them all into a single comma-separated string
+
+##### Example: Organization fields from `app/zod/organization.zod.ts`
+
+```typescript
+// OrganizationSchema has: id, name, description, code, logo, background, isDeleted, createdAt, updatedAt
+// OrganizationWithRelationSchema adds: users
+//
+// → fields string: "id,name,code,description,logo,background,createdAt,updatedAt,isDeleted,users"
+```
+
 #### Example: Fetching all organizations
 
 ```typescript
@@ -305,6 +327,7 @@ const MyPage = () => {
     const { data, isLoading } = useGetOrganizations({
         page: 1,
         limit: 10,
+        fields: "id,name,code,description,logo,background,createdAt,updatedAt,isDeleted,users",
     });
 
     // data is typed as GetAllOrganizations (from app/zod/organization.zod.ts)
@@ -434,6 +457,7 @@ const ListPage = () => {
 
 - **Always check `app/zod/{resource}.zod.ts` first** to understand the exact shape of response data and request payloads
 - **Always check `app/services/{resource}-service.ts`** to see the return types used in `ApiResponse<T>` — this tells you the structure of `data`
+- **Always pass `fields`** with a comma-separated string of all scalar fields from `{Resource}Schema` plus relation field names from `{Resource}WithRelationSchema` — refer to `app/zod/{resource}.zod.ts` to build this string
 - **GET hooks return data typed by the Zod schema**: `GetAll{Resource}s` for lists, `{Resource}WithRelation` for single items
 - **CREATE hooks expect payloads typed as `Create{Resource}`**: auto-generated fields (id, createdAt, updatedAt) are omitted
 - **UPDATE hooks expect payloads typed as `Update{Resource}`**: same as Create but all fields are optional (`.partial()`)

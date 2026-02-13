@@ -46,7 +46,7 @@ export default function OrganizationsPage() {
 		limit: PAGE_LIMIT,
 		query: searchQuery,
 		count: true,
-		fields: "id,name,code,description,logo,background,createdAt,updatedAt,isDeleted,users.id",
+		fields: "id,name,code,description,logo,background,createdAt,updatedAt,isDeleted,users",
 	});
 
 	const organizations = data?.organizations || [];

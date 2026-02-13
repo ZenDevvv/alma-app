@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { OrganizationSchema } from "./organization.zod";
 import { ObjectIdSchema } from "./object-id.zod";
+import { PaginationSchema } from "./common.zod";
 
 export const CategoryStatus = z.enum(["active", "archived"]);
 
@@ -24,15 +25,6 @@ export const CategorySchema = z.object({
 });
 
 export type Category = z.infer<typeof CategorySchema>;
-
-export const PaginationSchema = z.object({
-	total: z.number(),
-	page: z.number(),
-	limit: z.number(),
-	totalPages: z.number(),
-	hasNext: z.boolean(),
-	hasPrev: z.boolean(),
-});
 
 export const GetAllCategoriesSchema = z.object({
 	categories: z.array(CategorySchema),

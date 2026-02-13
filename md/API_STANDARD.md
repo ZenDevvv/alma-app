@@ -262,6 +262,10 @@ Copy the Zod schema file directly from the backend API project (`{projectName}-a
    - Add `import { ObjectIdSchema } from "./object-id.zod"` instead
    - Replace all `z.string().refine((val) => isValidObjectId(val))` with `ObjectIdSchema`
    - The `ObjectIdSchema` (defined in `app/zod/object-id.zod.ts`) uses a regex check: `z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ObjectId format")`
+4. **Ensure `PaginationSchema` imports from the shared `common.zod.ts`:**
+   - The API Zod file imports `PaginationSchema` from `./common.zod` — verify this import resolves in `app/zod/`
+   - If `app/zod/common.zod.ts` does not exist yet, copy it from `{projectName}-api/zod/common.zod.ts` (no modifications needed — it has no mongoose dependency)
+   - **Never define `PaginationSchema` inline in entity Zod files** — always import from `./common.zod`
 
 ### Key Points
 
@@ -269,6 +273,7 @@ Copy the Zod schema file directly from the backend API project (`{projectName}-a
 - The API Zod file is the **single source of truth** for all schemas (`{Resource}Schema`, `Create{Resource}Schema`, `Update{Resource}Schema`, `GetAll{Entities}Schema`)
 - If the API Zod file does not exist yet, create it in the API project first following `{projectName}-api/md/MODULE_TEMPLATE_GUIDE.md` Step 2, then copy it over
 - **If the copied Zod file imports other schemas (e.g., `import { PersonSchema } from "./person.zod"`) that do not yet exist in `app/zod/`, copy those dependency Zod files from `{projectName}-api/zod/` as well.** Recursively apply this rule until all imports resolve.
+- **`PaginationSchema` is defined once in `app/zod/common.zod.ts`** — never redefine it in entity Zod files. If the shared file doesn't exist in the frontend yet, copy `{projectName}-api/zod/common.zod.ts` to `app/zod/common.zod.ts`.
 - After copying, verify that all imports resolve correctly in the frontend context
 
 ---

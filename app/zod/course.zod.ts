@@ -4,6 +4,7 @@ import { FacultySchema } from "./faculty.zod";
 import { ProgramSchema } from "./program.zod";
 import { CategorySchema } from "./category.zod";
 import { ObjectIdSchema } from "./object-id.zod";
+import { PaginationSchema } from "./common.zod";
 
 export const CourseStatus = z.enum(["draft", "pending_approval", "active", "archived"]);
 export const CourseLevel = z.enum(["beginner", "intermediate", "advanced", "all_levels"]);
@@ -41,15 +42,6 @@ export const CourseSchema = z.object({
 
 export type Course = z.infer<typeof CourseSchema>;
 export type CourseWithRelation = Course;
-
-export const PaginationSchema = z.object({
-	total: z.number(),
-	page: z.number(),
-	limit: z.number(),
-	totalPages: z.number(),
-	hasNext: z.boolean(),
-	hasPrev: z.boolean(),
-});
 
 export const GetAllCoursesSchema = z.object({
 	courses: z.array(CourseSchema),

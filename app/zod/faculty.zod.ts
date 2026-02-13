@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { OrganizationSchema } from "./organization.zod";
 import { ObjectIdSchema } from "./object-id.zod";
+import { PaginationSchema } from "./common.zod";
 
 export const FacultyStatus = z.enum(["active", "archived"]);
 
@@ -23,15 +24,6 @@ export const FacultySchema = z.object({
 });
 
 export type Faculty = z.infer<typeof FacultySchema>;
-
-export const PaginationSchema = z.object({
-	total: z.number(),
-	page: z.number(),
-	limit: z.number(),
-	totalPages: z.number(),
-	hasNext: z.boolean(),
-	hasPrev: z.boolean(),
-});
 
 export const GetAllFacultiesSchema = z.object({
 	faculties: z.array(FacultySchema),

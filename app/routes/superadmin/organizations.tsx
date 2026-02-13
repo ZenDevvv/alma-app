@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,28 +17,16 @@ import { DataTable, type DataTableColumn } from "~/components/molecule/data-tabl
 import { TablePagination } from "~/components/molecule/table-pagination";
 import { useGetOrganizations } from "~/hooks/use-organization";
 import { useApiParams } from "~/hooks/util-hooks/use-api-params";
+import type { OrganizationWithRelation } from "~/zod/organization.zod";
 import { formatDate, getInitials, getOrgColor } from "~/utils/organization-utils";
 
 const PAGE_LIMIT = 10;
 
-type OrganizationRow = {
-	id: string;
-	name: string;
-	code: string;
-	logo?: string | null;
-	usersCount: number;
-	description: string;
-	createdAt: string | Date | null | undefined;
-	updatedAt: string | Date | null | undefined;
-	isDeleted: boolean;
-	initials: string;
-	color: string;
-	status: "active" | "inactive";
-};
+type StatusFilter = "all" | "active" | "inactive";
 
 export default function OrganizationsPage() {
 	const navigate = useNavigate();
-	const [statusFilter, setStatusFilter] = useState("all");
+	const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
 	const { apiParams, searchTerm, handleSearchChange, handlePageChange } = useApiParams({
 		limit: PAGE_LIMIT,
@@ -48,35 +36,19 @@ export default function OrganizationsPage() {
 
 	const { data, isLoading, isFetching, isError, error } = useGetOrganizations(apiParams);
 
-	const organizations = data?.organizations || [];
-	const organizationRows: OrganizationRow[] = useMemo(
-		() =>
-			organizations.map((org) => ({
-				id: org.id,
-				name: org.name,
-				code: org.code,
-				logo: org.logo,
-				usersCount: Array.isArray(org.users) ? org.users.length : 0,
-				description: org.description || "-",
-				createdAt: org.createdAt,
-				updatedAt: org.updatedAt,
-				isDeleted: org.isDeleted,
-				initials: getInitials(org.name),
-				color: getOrgColor(org.id),
-				status: org.isDeleted ? "inactive" : "active",
-			})),
-		[organizations],
-	);
+	const organizations: OrganizationWithRelation[] = data?.organizations ?? [];
 
-	const filteredOrgs =
+	const filteredOrganizations =
 		statusFilter === "all"
-			? organizationRows
-			: organizationRows.filter((org) => org.status === statusFilter);
+			? organizations
+			: organizations.filter((org) =>
+					statusFilter === "active" ? !org.isDeleted : org.isDeleted,
+				);
 
-	const totalResults = data?.count ?? data?.pagination?.total ?? organizationRows.length;
+	const totalResults = data?.count ?? data?.pagination?.total ?? organizations.length;
 	const totalPages = data?.pagination?.totalPages ?? 1;
-	const activeOrgs = organizationRows.filter((org) => org.status === "active").length;
-	const inactiveOrgs = organizationRows.filter((org) => org.status === "inactive").length;
+	const activeOrgs = organizations.filter((org) => !org.isDeleted).length;
+	const inactiveOrgs = organizations.filter((org) => org.isDeleted).length;
 
 	const statCards = [
 		{
@@ -99,7 +71,7 @@ export default function OrganizationsPage() {
 		},
 	];
 
-	const organizationColumns: DataTableColumn<OrganizationRow>[] = [
+	const organizationColumns: DataTableColumn<OrganizationWithRelation>[] = [
 		{
 			key: "name",
 			label: "Organization Name",
@@ -109,8 +81,9 @@ export default function OrganizationsPage() {
 				<div className="flex items-center gap-3">
 					<Avatar className="size-10">
 						<AvatarImage src={org.logo || undefined} alt={org.name} />
-						<AvatarFallback className={`${org.color} text-white text-xs font-semibold`}>
-							{org.initials}
+						<AvatarFallback
+							className={`${getOrgColor(org.id)} text-white text-xs font-semibold`}>
+							{getInitials(org.name)}
 						</AvatarFallback>
 					</Avatar>
 					<div>
@@ -126,22 +99,25 @@ export default function OrganizationsPage() {
 			render: (_, org) => <p className="text-sm font-medium text-foreground">{org.code}</p>,
 		},
 		{
-			key: "usersCount",
+			key: "users",
 			label: "Users",
 			className: "text-center",
 			cellClassName: "text-center",
-			render: (_, org) => (
-				<p className="text-sm font-medium text-foreground">
-					{org.usersCount.toLocaleString()}
-				</p>
-			),
+			render: (_, org) => {
+				const usersCount = Array.isArray(org.users) ? org.users.length : 0;
+				return (
+					<p className="text-sm font-medium text-foreground">
+						{usersCount.toLocaleString()}
+					</p>
+				);
+			},
 		},
 		{
 			key: "description",
 			label: "Description",
 			render: (_, org) => (
 				<p className="max-w-[320px] truncate text-sm text-muted-foreground">
-					{org.description}
+					{org.description || "-"}
 				</p>
 			),
 		},
@@ -153,22 +129,25 @@ export default function OrganizationsPage() {
 			),
 		},
 		{
-			key: "status",
+			key: "isDeleted",
 			label: "Status",
 			className: "text-center",
 			cellClassName: "text-center",
-			render: (_, org) => (
-				<div className="flex items-center justify-center gap-2.5">
-					<Badge
-						className={`text-[11px] ${
-							org.status === "active"
-								? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400"
-								: "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-400"
-						}`}>
-						{org.status.charAt(0).toUpperCase() + org.status.slice(1)}
-					</Badge>
-				</div>
-			),
+			render: (_, org) => {
+				const status = org.isDeleted ? "inactive" : "active";
+				return (
+					<div className="flex items-center justify-center gap-2.5">
+						<Badge
+							className={`text-[11px] ${
+								status === "active"
+									? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400"
+									: "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-400"
+							}`}>
+							{status.charAt(0).toUpperCase() + status.slice(1)}
+						</Badge>
+					</div>
+				);
+			},
 		},
 		{
 			key: "id",
@@ -232,7 +211,9 @@ export default function OrganizationsPage() {
 						/>
 					</div>
 					<div className="flex items-center gap-2">
-						<Select value={statusFilter} onValueChange={setStatusFilter}>
+						<Select
+							value={statusFilter}
+							onValueChange={(value) => setStatusFilter(value as StatusFilter)}>
 							<SelectTrigger className="w-[140px]">
 								<SelectValue placeholder="Status: All" />
 							</SelectTrigger>
@@ -286,7 +267,7 @@ export default function OrganizationsPage() {
 
 					<DataTable
 						columns={organizationColumns}
-						data={isLoading ? [] : filteredOrgs}
+						data={isLoading ? [] : filteredOrganizations}
 						variant="organizations"
 						className="rounded-none"
 						onRowClick={(row) => navigate(`/superadmin/organizations/${row.id}`)}
@@ -298,7 +279,7 @@ export default function OrganizationsPage() {
 						totalItems={totalResults}
 						totalPages={totalPages}
 						pageSize={PAGE_LIMIT}
-						currentPageItemCount={filteredOrgs.length}
+						currentPageItemCount={filteredOrganizations.length}
 						isLoading={isLoading}
 						isUpdating={isFetching}
 						loadingText="Loading organizations..."

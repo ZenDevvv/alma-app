@@ -16,6 +16,7 @@ import {
 import { DataTable, type DataTableColumn } from "~/components/molecule/data-table-updated";
 import { TablePagination } from "~/components/molecule/table-pagination";
 import { useGetOrganizations } from "~/hooks/use-organization";
+import { useApiParams } from "~/hooks/util-hooks/use-api-params";
 import { formatDate, getInitials, getOrgColor } from "~/utils/organization-utils";
 
 const PAGE_LIMIT = 10;
@@ -38,16 +39,14 @@ type OrganizationRow = {
 export default function OrganizationsPage() {
 	const navigate = useNavigate();
 	const [statusFilter, setStatusFilter] = useState("all");
-	const [currentPage, setCurrentPage] = useState(1);
-	const [searchQuery, setSearchQuery] = useState("");
 
-	const { data, isLoading, isFetching, isError, error } = useGetOrganizations({
-		page: currentPage,
+	const { apiParams, searchTerm, handleSearchChange, handlePageChange } = useApiParams({
 		limit: PAGE_LIMIT,
-		query: searchQuery,
 		count: true,
 		fields: "id,name,code,description,logo,background,createdAt,updatedAt,isDeleted,users",
 	});
+
+	const { data, isLoading, isFetching, isError, error } = useGetOrganizations(apiParams);
 
 	const organizations = data?.organizations || [];
 	const organizationRows: OrganizationRow[] = useMemo(
@@ -228,11 +227,8 @@ export default function OrganizationsPage() {
 						<Input
 							placeholder="Search by name, code, description..."
 							className="pl-9 bg-background"
-							value={searchQuery}
-							onChange={(e) => {
-								setSearchQuery(e.target.value);
-								setCurrentPage(1);
-							}}
+							value={searchTerm}
+							onChange={handleSearchChange}
 						/>
 					</div>
 					<div className="flex items-center gap-2">
@@ -297,8 +293,8 @@ export default function OrganizationsPage() {
 					/>
 
 					<TablePagination
-						currentPage={currentPage}
-						onPageChange={setCurrentPage}
+						currentPage={apiParams.page ?? 1}
+						onPageChange={handlePageChange}
 						totalItems={totalResults}
 						totalPages={totalPages}
 						pageSize={PAGE_LIMIT}

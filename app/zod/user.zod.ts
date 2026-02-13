@@ -2,6 +2,7 @@ import { z } from "zod";
 import { PersonSchema } from "./person.zod";
 import { OrganizationSchema } from "./organization.zod";
 import { PaginationSchema } from "./common.zod";
+import { ObjectIdSchema } from "./object-id.zod";
 
 // ─── Enums matching Prisma ───────────────────────────────────────────
 
@@ -14,7 +15,7 @@ export const UserStatus = z.enum(["active", "inactive", "suspended", "archived"]
 // ─── User Model Schema ──────────────────────────────────────────────
 
 export const UserSchema = z.object({
-	id: z.string(),
+	id: ObjectIdSchema,
 	avatar: z.string().optional(),
 	userName: z
 		.string()
@@ -37,11 +38,11 @@ export const UserSchema = z.object({
 	updatedAt: z.coerce.date(),
 
 	// --- Foreign key IDs ---
-	personId: z.string().optional(),
-	orgId: z.string().optional(),
+	personId: ObjectIdSchema.optional(),
+	orgId: ObjectIdSchema.optional(),
 	// --- Relation fields (from Prisma model) ---
 	person: PersonSchema.optional(),
-	organization: OrganizationSchema.optional(),
+	organization: z.lazy(() => OrganizationSchema).optional(),
 });
 
 export type User = z.infer<typeof UserSchema>;

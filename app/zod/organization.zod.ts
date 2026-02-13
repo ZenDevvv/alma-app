@@ -1,9 +1,10 @@
 import { z } from "zod";
 import { UserSchema } from "./user.zod";
-import type { Pagination } from "~/types/pagination";
+import { ObjectIdSchema } from "./object-id.zod";
+import { PaginationSchema } from "./common.zod";
 
 export const OrganizationSchema = z.object({
-	id: z.string(),
+	id: ObjectIdSchema,
 	name: z.string().min(1),
 	description: z.string().optional(),
 	code: z.string().min(1),
@@ -14,19 +15,12 @@ export const OrganizationSchema = z.object({
 	updatedAt: z.coerce.date(),
 });
 export const OrganizationWithRelationSchema = OrganizationSchema.extend({
-	users: z.array(UserSchema).optional(),
+	users: z.array(z.lazy(() => UserSchema)).optional(),
 });
 
 export const GetAllOrganizationsSchema = z.object({
 	organizations: z.array(OrganizationWithRelationSchema),
-	pagination: z
-		.object({
-			page: z.number(),
-			limit: z.number(),
-			total: z.number(),
-			totalPages: z.number(),
-		})
-		.optional(),
+	pagination: PaginationSchema.optional(),
 	count: z.number().optional(),
 });
 
@@ -41,11 +35,19 @@ export const CreateOrganizationSchema = OrganizationSchema.omit({
 	isDeleted: true,
 });
 
-export const UpdateOrganizationSchema = CreateOrganizationSchema.partial();
+export const UpdateOrganizationSchema = OrganizationSchema.omit({
+	id: true,
+	createdAt: true,
+	updatedAt: true,
+	isDeleted: true,
+}).partial();
+
+export const GroupBySchema = z.object({
+	groupBy: z.string().optional(),
+});
 
 export type Organization = z.infer<typeof OrganizationSchema>;
 export type OrganizationWithRelation = z.infer<typeof OrganizationWithRelationSchema>;
 export type GetAllOrganizations = z.infer<typeof GetAllOrganizationsSchema>;
 export type CreateOrganization = z.infer<typeof CreateOrganizationSchema>;
 export type UpdateOrganization = z.infer<typeof UpdateOrganizationSchema>;
-export type OrganizationPagination = Pagination;

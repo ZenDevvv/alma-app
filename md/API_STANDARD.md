@@ -11,6 +11,7 @@ This document outlines the standard pattern for creating API calls in the fronte
 3. [Step 3: Create React Query Hooks](#step-3-create-react-query-hooks)
 4. [Step 4: Create Zod Schema File](#step-4-create-zod-schema-file)
 5. [Step 5: Using Hooks in Pages](#step-5-using-hooks-in-pages)
+6. [Step 6: Page Integration Rules](#step-6-page-integration-rules)
 
 ---
 
@@ -52,14 +53,14 @@ Create a service class that extends `APIService` and implements methods for each
 import { APIService } from "./api-service";
 import { apiClient, type ApiResponse } from "~/lib/api-client";
 import { API_ENDPOINTS } from "~/configs/endpoints";
-import type { GetAll{Resource}, {Resource}WithRelation, Create{Resource}, Update{Resource} } from "~/zod/{resource}.zod";
+import type { GetAll{Resource}s, {Resource}, Create{Resource}, Update{Resource} } from "~/zod/{resource}.zod";
 
 const { RESOURCE } = API_ENDPOINTS;
 
 class {Resource}Service extends APIService {
     getAll{Resource}s = async () => {
         try {
-            const response: ApiResponse<GetAll{Resource}> = await apiClient.get(
+            const response: ApiResponse<GetAll{Resource}s> = await apiClient.get(
                 `${RESOURCE.GET_ALL}${this.getQueryString()}`,
             );
             return response.data;
@@ -72,7 +73,7 @@ class {Resource}Service extends APIService {
 
     get{Resource}ById = async ({resource}Id: string) => {
         try {
-            const response: ApiResponse<{Resource}WithRelation> = await apiClient.get(
+            const response: ApiResponse<{Resource}> = await apiClient.get(
                 `${RESOURCE.GET_BY_ID.replace(":id", {resource}Id)}${this.getQueryString()}`,
             );
             return response.data;
@@ -85,7 +86,7 @@ class {Resource}Service extends APIService {
 
     create{Resource} = async (data: Create{Resource} | FormData) => {
         try {
-            let response: ApiResponse<{ {resource}: {Resource}WithRelation }>;
+            let response: ApiResponse<{ {resource}: {Resource} }>;
             if (data instanceof FormData) {
                 response = await apiClient.postFormData(RESOURCE.CREATE, data);
             } else {
@@ -107,7 +108,7 @@ class {Resource}Service extends APIService {
         data: Update{Resource} | FormData;
     }) => {
         try {
-            let response: ApiResponse<{ {resource}: {Resource}WithRelation }>;
+            let response: ApiResponse<{ {resource}: {Resource} }>;
             if (data instanceof FormData) {
                 response = await apiClient.patchFormData(
                     RESOURCE.UPDATE.replace(":id", {resource}Id),
@@ -288,7 +289,7 @@ Before using any hook, check these files for the resource:
 
 | Purpose              | File                                 | What to look for                                                  |
 | -------------------- | ------------------------------------ | ----------------------------------------------------------------- |
-| Response & Payload Types | `app/zod/{resource}.zod.ts`          | All type definitions (`GetAll{Resource}s`, `Create{Resource}`, `Update{Resource}`, `{Resource}WithRelation`) |
+| Response & Payload Types | `app/zod/{resource}.zod.ts`          | All type definitions (`GetAll{Resource}s`, `{Resource}`, `Create{Resource}`, `Update{Resource}`) |
 | Service Methods      | `app/services/{resource}-service.ts` | How each method calls the API and what response type it returns    |
 
 ### Using GET hooks (List & Detail)
@@ -297,22 +298,17 @@ When using `useGet{Resource}s` or `useGet{Resource}ById`, the **response data ty
 
 #### Passing the `fields` Parameter
 
-**Always pass the `fields` parameter** as a comma-separated string containing all the fields you need from the resource. Build this string by combining:
-
-1. **All scalar fields** from `{Resource}Schema` in the Zod file (e.g., `id`, `name`, `code`, `description`, `createdAt`, `updatedAt`, `isDeleted`, etc.)
-2. **Relation field names** from `{Resource}WithRelationSchema` (e.g., `users`, `orders`, `products`) — include only the relation field **name**, not its nested fields
+**Always pass the `fields` parameter** as a comma-separated string containing all the fields you need from the resource. Since relation fields are now part of the base `{Resource}Schema`, simply list all keys from that schema.
 
 To determine the correct fields string:
 1. Open `app/zod/{resource}.zod.ts`
-2. List every key in `{Resource}Schema` — these are the scalar fields
-3. List every key added in `{Resource}WithRelationSchema.extend({...})` — these are the relation fields
-4. Join them all into a single comma-separated string
+2. List every key in `{Resource}Schema` — this includes both scalar fields and relation fields (relation fields are defined as optional in the base schema)
+3. Join them all into a single comma-separated string
 
 ##### Example: Organization fields from `app/zod/organization.zod.ts`
 
 ```typescript
-// OrganizationSchema has: id, name, description, code, logo, background, isDeleted, createdAt, updatedAt
-// OrganizationWithRelationSchema adds: users
+// OrganizationSchema has: id, name, description, code, logo, background, isDeleted, createdAt, updatedAt, users
 //
 // → fields string: "id,name,code,description,logo,background,createdAt,updatedAt,isDeleted,users"
 ```
@@ -321,7 +317,7 @@ To determine the correct fields string:
 
 ```typescript
 // 1. Check app/zod/organization.zod.ts for the response type:
-//    - GetAllOrganizations → { organizations: OrganizationWithRelation[], pagination?: {...}, count?: number }
+//    - GetAllOrganizations → { organizations: Organization[], pagination?: {...}, count?: number }
 //
 // 2. Check app/services/organization-service.ts to confirm:
 //    - getAllOrganizations() returns ApiResponse<GetAllOrganizations>
@@ -346,17 +342,17 @@ const MyPage = () => {
 
 ```typescript
 // 1. Check app/zod/organization.zod.ts for the response type:
-//    - OrganizationWithRelation → { id, name, description, code, isDeleted, createdAt, updatedAt }
+//    - Organization → { id, name, description, code, isDeleted, createdAt, updatedAt, users?, ... }
 //
 // 2. Check app/services/organization-service.ts to confirm:
-//    - getOrganizationById() returns ApiResponse<OrganizationWithRelation>
+//    - getOrganizationById() returns ApiResponse<Organization>
 
 import { useGetOrganizationById } from "~/hooks/use-organization";
 
 const DetailPage = ({ organizationId }: { organizationId: string }) => {
     const { data, isLoading } = useGetOrganizationById(organizationId);
 
-    // data is typed as OrganizationWithRelation (from app/zod/organization.zod.ts)
+    // data is typed as Organization (from app/zod/organization.zod.ts)
     // Access fields: data?.id, data?.name, data?.code, etc.
 };
 ```
@@ -462,11 +458,88 @@ const ListPage = () => {
 
 - **Always check `app/zod/{resource}.zod.ts` first** to understand the exact shape of response data and request payloads
 - **Always check `app/services/{resource}-service.ts`** to see the return types used in `ApiResponse<T>` — this tells you the structure of `data`
-- **Always pass `fields`** with a comma-separated string of all scalar fields from `{Resource}Schema` plus relation field names from `{Resource}WithRelationSchema` — refer to `app/zod/{resource}.zod.ts` to build this string
-- **GET hooks return data typed by the Zod schema**: `GetAll{Resource}s` for lists, `{Resource}WithRelation` for single items
+- **Always pass `fields`** with a comma-separated string of all keys from `{Resource}Schema` (which includes both scalar and relation fields) — refer to `app/zod/{resource}.zod.ts` to build this string
+- **GET hooks return data typed by the Zod schema**: `GetAll{Resource}s` for lists, `{Resource}` for single items
 - **CREATE hooks expect payloads typed as `Create{Resource}`**: auto-generated fields (id, createdAt, updatedAt) are omitted
 - **UPDATE hooks expect payloads typed as `Update{Resource}`**: same as Create but all fields are optional (`.partial()`)
 - **The Zod schema is the single source of truth** for all types used across services, hooks, and pages
+
+---
+
+## Step 6: Page Integration Rules
+
+When integrating hooks into pages, follow these strict rules to keep pages clean and consistent.
+
+### Rule 1: Use Zod Types Directly — No Intermediate Types
+
+**Never** create page-local types (e.g., `CourseRow`, `UserRow`) to reshape or re-map the resource data. Use the Zod-inferred types (`{Resource}`, `GetAll{Resource}s`, `Create{Resource}`, `Update{Resource}`) directly in the page.
+
+```typescript
+// WRONG — creating an intermediate type and manually mapping data
+type CourseRow = {
+    id: string;
+    title: string;
+    status: string;
+    // ... hand-picked fields
+};
+
+const rows: CourseRow[] = data?.courses.map((c) => ({
+    id: c.id,
+    title: c.title,
+    status: c.status,
+    // ... manual field mapping
+})) ?? [];
+
+// CORRECT — use the Zod type directly, no mapping needed
+import type { Course } from "~/zod/course.zod";
+
+const courses: Course[] = data?.courses ?? [];
+```
+
+### Rule 2: Move Display Helpers to Reusable Files
+
+Utility functions that convert raw data values into display labels or badge elements (e.g., `statusBadge`, `statusLabel`, `levelLabel`, `roleBadge`) **must not** live inside page components. Place them in a shared utility file so they can be reused across pages.
+
+**Recommended location:** `app/lib/{resource}-utils.ts` or `app/lib/display-utils.ts`
+
+```typescript
+// app/lib/display-utils.ts
+import { Badge } from "~/components/ui/badge";
+
+export const getStatusBadge = (status: string) => {
+    switch (status) {
+        case "active":
+            return (
+                <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700 text-[11px]
+                  dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400">
+                    Active
+                </Badge>
+            );
+        // ... other statuses
+    }
+};
+
+export const getLevelLabel = (level: string) => {
+    // ... level display logic
+};
+```
+
+```typescript
+// In the page component — import helpers, don't define them inline
+import { getStatusBadge, getLevelLabel } from "~/lib/display-utils";
+```
+
+### Rule 3: Always Follow the Styling Guide
+
+When integrating hooks into pages, **always refer to `md/STYLING_GUIDE.md`** for component patterns, color tokens, icon usage, and layout conventions. Every UI element rendered with hook data must comply with the styling guide.
+
+### Summary
+
+| Rule | Do | Don't |
+|---|---|---|
+| Types | Use Zod types directly (`{Resource}`, `GetAll{Resource}s`, etc.) | Create page-local row/item types and manually map data |
+| Display helpers | Put in `app/lib/display-utils.ts` or `app/lib/{resource}-utils.ts` | Define `statusBadge`, `levelLabel`, etc. inside page files |
+| Styling | Follow `md/STYLING_GUIDE.md` for all UI patterns | Improvise styles without checking the guide |
 
 ---
 
@@ -481,6 +554,7 @@ When adding a new resource API, create/modify the following files:
 | 3    | Hooks          | `app/hooks/use-{resource}.ts`        |
 | 4    | Zod Schema (copy from API) | `{projectName}-api/zod/{resource}.zod.ts` → `app/zod/{resource}.zod.ts` |
 | 5    | Page Integration | Check Zod + Service before using hooks in pages |
+| 6    | Page Integration Rules | No intermediate types, display helpers in reusable files, follow Styling Guide |
 
 ---
 

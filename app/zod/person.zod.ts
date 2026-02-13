@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ObjectIdSchema } from "./object-id.zod";
 
 // ─── Enums matching Prisma ───────────────────────────────────────────
 
@@ -134,7 +135,7 @@ export const DocumentsSchema = z
 // ─── Person Model Schema ────────────────────────────────────────────
 
 export const PersonSchema = z.object({
-	id: z.string(),
+	id: ObjectIdSchema,
 	personalInfo: PersonalInfoSchema,
 	contactInfo: z.array(ContactSchema),
 	addresses: z.array(AddressSchema),
@@ -145,7 +146,7 @@ export const PersonSchema = z.object({
 	kycStatus: KYCStatus.default("PENDING"),
 	kycCompletedAt: z.coerce.date().optional(),
 	lastVerifiedAt: z.coerce.date().optional(),
-	orgId: z.string().optional(),
+	orgId: ObjectIdSchema.optional(),
 	createdAt: z.coerce.date(),
 	updatedAt: z.coerce.date(),
 });

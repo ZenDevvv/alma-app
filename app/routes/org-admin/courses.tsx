@@ -16,6 +16,12 @@ import { DataTable, type DataTableColumn } from "~/components/molecule/data-tabl
 import { TablePagination } from "~/components/molecule/table-pagination";
 import { useGetCourses } from "~/hooks/use-course";
 import { useApiParams } from "~/hooks/util-hooks/use-api-params";
+import {
+	courseLevelLabel,
+	courseStatusBadgeClass,
+	courseStatusLabel,
+	formatUpdatedBy,
+} from "~/lib/course-utils";
 import type { Course } from "~/zod/course.zod";
 import { formatDate } from "~/utils/organization-utils";
 
@@ -23,56 +29,12 @@ const PAGE_SIZE = 5;
 const COURSE_FIELDS =
 	"id,title,code,description,status,level,creditHours,thumbnail,syllabus,version,orgId,facultyId,programId,categoryId,isDeleted,createdBy,updatedBy,createdAt,updatedAt,organization,faculty,program,category";
 
-type CourseStatus = Course["status"];
-type CourseLevel = Course["level"];
-
-type CourseRow = {
-	id: string;
-	code: string;
-	title: string;
-	description: string;
-	category: string;
-	level: CourseLevel;
-	creditHours: number | null;
-	updatedAt: string | Date | null | undefined;
-	updatedBy: string;
-	status: CourseStatus;
-};
-
-const statusBadge: Record<CourseStatus, string> = {
-	active: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400",
-	archived:
-		"border-gray-200 bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400",
-	draft: "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-400",
-	pending_approval:
-		"border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-400",
-};
-
-const statusLabel: Record<CourseStatus, string> = {
-	active: "Active",
-	archived: "Archived",
-	draft: "Draft",
-	pending_approval: "Pending Approval",
-};
-
-const levelLabel: Record<CourseLevel, string> = {
-	beginner: "Beginner",
-	intermediate: "Intermediate",
-	advanced: "Advanced",
-	all_levels: "All Levels",
-};
-
 const buildCourseFilter = (level: string, categoryId: string, status: string) => {
 	const filters: string[] = [];
 	if (level !== "all") filters.push(`level:${level}`);
 	if (categoryId !== "all") filters.push(`categoryId:${categoryId}`);
 	if (status !== "all") filters.push(`status:${status}`);
 	return filters.join(",");
-};
-
-const formatUpdatedBy = (updatedBy: string) => {
-	if (!updatedBy || updatedBy === "-") return "-";
-	return updatedBy.length > 8 ? `${updatedBy.slice(0, 8)}...` : updatedBy;
 };
 
 export default function OrgAdminCourses() {
@@ -89,7 +51,7 @@ export default function OrgAdminCourses() {
 		});
 
 	const { data, isLoading, isFetching, isError, error } = useGetCourses(apiParams);
-	const courses = data?.courses ?? [];
+	const courses: Course[] = data?.courses ?? [];
 
 	const categoryOptions = useMemo(() => {
 		const options = new Map<string, string>();
@@ -140,27 +102,10 @@ export default function OrgAdminCourses() {
 		);
 	};
 
-	const courseRows = useMemo<CourseRow[]>(
-		() =>
-			courses.map((course) => ({
-				id: course.id,
-				code: course.code,
-				title: course.title,
-				description: course.description || "-",
-				category: course.category?.name || "-",
-				level: course.level,
-				creditHours: course.creditHours ?? null,
-				updatedAt: course.updatedAt,
-				updatedBy: course.updatedBy || "-",
-				status: course.status,
-			})),
-		[courses],
-	);
-
-	const totalResults = data?.count ?? data?.pagination?.total ?? courseRows.length;
+	const totalResults = data?.count ?? data?.pagination?.total ?? courses.length;
 	const totalPages = data?.pagination?.totalPages ?? 1;
 
-	const courseColumns = useMemo<DataTableColumn<CourseRow>[]>(
+	const courseColumns = useMemo<DataTableColumn<Course>[]>(
 		() => [
 			{
 				key: "code",
@@ -180,16 +125,18 @@ export default function OrgAdminCourses() {
 						<p className="text-sm font-medium text-primary hover:underline cursor-pointer">
 							{course.title}
 						</p>
-						<p className="text-xs text-muted-foreground mt-0.5">{course.description}</p>
+						<p className="text-xs text-muted-foreground mt-0.5">
+							{course.description || "-"}
+						</p>
 					</div>
 				),
 			},
 			{
-				key: "category",
+				key: "categoryId",
 				label: "Category",
 				cellClassName: "py-4",
 				render: (_, course) => (
-					<span className="text-sm text-foreground">{course.category}</span>
+					<span className="text-sm text-foreground">{course.category?.name || "-"}</span>
 				),
 			},
 			{
@@ -197,7 +144,9 @@ export default function OrgAdminCourses() {
 				label: "Level",
 				cellClassName: "py-4",
 				render: (_, course) => (
-					<span className="text-sm text-foreground">{levelLabel[course.level]}</span>
+					<span className="text-sm text-foreground">
+						{courseLevelLabel[course.level]}
+					</span>
 				),
 			},
 			{
@@ -229,8 +178,8 @@ export default function OrgAdminCourses() {
 				className: "text-center",
 				cellClassName: "py-4 text-center",
 				render: (_, course) => (
-					<Badge className={`text-[11px] ${statusBadge[course.status]}`}>
-						{statusLabel[course.status]}
+					<Badge className={`text-[11px] ${courseStatusBadgeClass[course.status]}`}>
+						{courseStatusLabel[course.status]}
 					</Badge>
 				),
 			},
@@ -281,12 +230,18 @@ export default function OrgAdminCourses() {
 							</SelectTrigger>
 							<SelectContent>
 								<SelectItem value="all">All Levels</SelectItem>
-								<SelectItem value="beginner">{levelLabel.beginner}</SelectItem>
-								<SelectItem value="intermediate">
-									{levelLabel.intermediate}
+								<SelectItem value="beginner">
+									{courseLevelLabel.beginner}
 								</SelectItem>
-								<SelectItem value="advanced">{levelLabel.advanced}</SelectItem>
-								<SelectItem value="all_levels">{levelLabel.all_levels}</SelectItem>
+								<SelectItem value="intermediate">
+									{courseLevelLabel.intermediate}
+								</SelectItem>
+								<SelectItem value="advanced">
+									{courseLevelLabel.advanced}
+								</SelectItem>
+								<SelectItem value="all_levels">
+									{courseLevelLabel.all_levels}
+								</SelectItem>
 							</SelectContent>
 						</Select>
 						<Select value={categoryFilter} onValueChange={handleCategoryFilterChange}>
@@ -308,11 +263,13 @@ export default function OrgAdminCourses() {
 							</SelectTrigger>
 							<SelectContent>
 								<SelectItem value="all">All Statuses</SelectItem>
-								<SelectItem value="active">{statusLabel.active}</SelectItem>
-								<SelectItem value="archived">{statusLabel.archived}</SelectItem>
-								<SelectItem value="draft">{statusLabel.draft}</SelectItem>
+								<SelectItem value="active">{courseStatusLabel.active}</SelectItem>
+								<SelectItem value="archived">
+									{courseStatusLabel.archived}
+								</SelectItem>
+								<SelectItem value="draft">{courseStatusLabel.draft}</SelectItem>
 								<SelectItem value="pending_approval">
-									{statusLabel.pending_approval}
+									{courseStatusLabel.pending_approval}
 								</SelectItem>
 							</SelectContent>
 						</Select>
@@ -340,7 +297,7 @@ export default function OrgAdminCourses() {
 
 					<DataTable
 						columns={courseColumns}
-						data={isLoading ? [] : courseRows}
+						data={isLoading ? [] : courses}
 						variant="organizations"
 						className="rounded-none"
 					/>
@@ -353,7 +310,7 @@ export default function OrgAdminCourses() {
 							totalItems={totalResults}
 							totalPages={totalPages}
 							pageSize={PAGE_SIZE}
-							currentPageItemCount={courseRows.length}
+							currentPageItemCount={courses.length}
 							isLoading={isLoading}
 							isUpdating={isFetching}
 							loadingText="Loading courses..."
